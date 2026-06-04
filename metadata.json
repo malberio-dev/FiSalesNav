@@ -1,0 +1,8 @@
+{
+  "name": "Field Sales Visit Planner",
+  "description": "A mobile-first planner for sales reps to manage visits, view maps/routes, and capture client debriefings with AI support.",
+  "requestFramePermissions": [
+    "geolocation"
+  ],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
