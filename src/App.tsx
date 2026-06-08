@@ -202,9 +202,7 @@ export default function App() {
   };
 
   const handleDeleteVisit = (id: string) => {
-    if (confirm("Sei sicuro di voler eliminare definitivamente questa visita?")) {
-      setVisits((prev) => prev.filter((v) => v.id !== id));
-    }
+    setVisits((prev) => prev.filter((v) => v.id !== id));
   };
 
   const handleMoveToBacklog = (visit: SalesVisit) => {
@@ -238,7 +236,7 @@ export default function App() {
     <div className="min-h-screen bg-slate-50 flex flex-col antialiased">
       <Header
         appName="FiSalesNav"
-        appVersion="v0.3.1"
+        appVersion="v0.3.2"
         weekKey={weekKey}
         dbStatus={dbStatus}
         onDownloadSnapshot={handleDownloadSnapshot}
@@ -302,6 +300,7 @@ export default function App() {
               onOpenImportModal={() => setIsImportOpen(true)}
               onOpenDebrief={(v) => setDebriefVisit(v)}
               onDeleteVisit={handleDeleteVisit}
+              startLocation={settings.startLocation}
             />
           )}
 

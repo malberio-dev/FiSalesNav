@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Calendar, Plus, Sparkles, Check, ChevronLeft, ChevronRight, HelpCircle, Search } from "lucide-react";
+import { Calendar, Plus, Sparkles, Check, ChevronLeft, ChevronRight, HelpCircle, Search, Navigation } from "lucide-react";
 import { SalesVisit } from "../types";
 
 interface CalendarTabProps {
@@ -12,6 +12,7 @@ interface CalendarTabProps {
   onOpenImportModal: () => void;
   onOpenDebrief: (visit: SalesVisit) => void;
   onDeleteVisit: (id: string) => void;
+  startLocation: string;
 }
 
 export const CalendarTab: React.FC<CalendarTabProps> = ({
@@ -24,6 +25,7 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
   onOpenImportModal,
   onOpenDebrief,
   onDeleteVisit,
+  startLocation,
 }) => {
   const [expandedVisitId, setExpandedVisitId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -37,6 +39,15 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
     } catch (e) {
       return dateStr;
     }
+  };
+
+  const openDayItineraryInMaps = (dayVisits: SalesVisit[]) => {
+    if (dayVisits.length === 0) return;
+    const origin = startLocation;
+    const destination = startLocation;
+    const waypoints = dayVisits.map((v) => v.indirizzo).join("|");
+    const url = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&waypoints=${encodeURIComponent(waypoints)}&travelmode=driving`;
+    window.open(url, "_blank");
   };
 
   const getEsitoPill = (esito: string) => {
@@ -152,6 +163,16 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
                     {dayVisits.length} {dayVisits.length === 1 ? "visita" : "visite"}
                   </span>
                   
+                  {dayVisits.length > 0 && (
+                    <button
+                      onClick={() => openDayItineraryInMaps(dayVisits)}
+                      className="p-1 rounded-md text-emerald-600 hover:bg-emerald-50 active:bg-emerald-100 transition"
+                      title="Apri intero itinerario su Google Maps"
+                    >
+                      <Navigation className="w-4 h-4" />
+                    </button>
+                  )}
+
                   <button
                     onClick={() => onOpenAddModal(dateStr)}
                     className="p-1 rounded-md text-blue-600 hover:bg-blue-50 active:bg-blue-100 transition"

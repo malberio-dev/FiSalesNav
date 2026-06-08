@@ -80,7 +80,7 @@ export async function geocodeAddress(address: string): Promise<[number, number] 
 
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3500);
+    const timeoutId = setTimeout(() => controller.abort(), 1200);
     const query = `${encodeURIComponent(queryAddress)}, Italy`;
     const res = await fetch(
       `https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`,
@@ -98,41 +98,7 @@ export async function geocodeAddress(address: string): Promise<[number, number] 
       }
     }
   } catch (error) {
-    console.error("OSM Geocoding failed, trying town fallback", error);
-  }
-
-  // Fallback: extract and geocode only the Comune as requested by Issue #10
-  try {
-    const parts = queryAddress.split(",");
-    let comuneCandidate = "";
-    if (parts.length > 1) {
-      comuneCandidate = parts[1].trim();
-    } else {
-      comuneCandidate = parts[0].trim();
-    }
-
-    if (comuneCandidate && comuneCandidate.toLowerCase() !== queryAddress.toLowerCase()) {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3500);
-      const query = `${encodeURIComponent(comuneCandidate)}, Italy`;
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`,
-        { signal: controller.signal }
-      );
-      clearTimeout(timeoutId);
-
-      if (res.ok) {
-        const list = await res.json();
-        if (list && list.length > 0) {
-          const coords: [number, number] = [parseFloat(list[0].lat), parseFloat(list[0].lon)];
-          geoCache[cleanAddress] = coords;
-          saveGeoCache();
-          return coords;
-        }
-      }
-    }
-  } catch (e) {
-    console.error("OSM town fallback failed, resorting to static offset", e);
+    console.error("OSM Geocoding failed, falling back to local simulated offset coordinate", error);
   }
 
   // Fallback coords centered near Milan, with a slight hash offset to keep multiple addresses geographically unique
@@ -155,13 +121,12 @@ export async function calculateRouteLegs(
   destAddresses: string[]
 ): Promise<TravelLeg[]> {
   const result: TravelLeg[] = [];
-  const coordsList: ([number, number] | null)[] = [];
 
-  // Geocode all points
-  coordsList.push(await geocodeAddress(startAddress));
-  for (const addr of destAddresses) {
-    coordsList.push(await geocodeAddress(addr));
-  }
+  // Geocode all points in parallel to prevent sequential wait bottlenecks
+  const coordsList = await Promise.all([
+    geocodeAddress(startAddress),
+    ...destAddresses.map((addr) => geocodeAddress(addr)),
+  ]);
 
   // Calculate successive legs
   for (let i = 0; i < coordsList.length - 1; i++) {
@@ -178,7 +143,7 @@ export async function calculateRouteLegs(
     // Try live OSRM routing
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 2000);
+      const timeoutId = setTimeout(() => controller.abort(), 1200);
       const res = await fetch(
         `https://router.project-osrm.org/route/v1/driving/${p1[1]},${p1[0]};${p2[1]},${p2[0]}?overview=false`,
         { signal: controller.signal }
@@ -196,7 +161,7 @@ export async function calculateRouteLegs(
         }
       }
     } catch (e) {
-      // Slitly expected on sandbox or rate limiting
+      // Expected fallback on network issues or rate limiting
     }
 
     if (!calculated) {
@@ -222,12 +187,11 @@ export async function optimizeRouteSequence(
 ): Promise<string[]> {
   if (visits.length <= 1) return visits.map(v => v.id);
 
-  // 1. Geocode everything
-  const startCoords = await geocodeAddress(startAddress);
-  const coordsList: ([number, number] | null)[] = [];
-  for (const v of visits) {
-    coordsList.push(await geocodeAddress(v.address));
-  }
+  // 1. Geocode everything in parallel
+  const [startCoords, ...coordsList] = await Promise.all([
+    geocodeAddress(startAddress),
+    ...visits.map((v) => geocodeAddress(v.address)),
+  ]);
 
   // Helper distance function
   const getDist = (c1: [number, number] | null, c2: [number, number] | null): number => {

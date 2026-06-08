@@ -1,14 +1,10 @@
 import express from "express";
 import path from "path";
-import { fileURLToPath } from "url";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI, Type } from "@google/genai";
 import dotenv from "dotenv";
 
 dotenv.config();
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = 3000;
@@ -132,8 +128,12 @@ TESTO NON STRUTTURATO DA ELABORARE:
 ${text}
 """
 
-LINEE GUIDA AGGIUNTIVE:
+LINEE GUIDA AGGIUNTIVE E REGOLE SUI DATI:
 ${customPrompt || "Distribuisci equamente le visite nelle giornate disponibili cercando di ottimizzare i tempi geografici se indicati nel testo. Genera una breve nota commerciale preventiva nel campo 'notePreVisita' basata sulla tipologia del cliente, se deducibile."}
+
+REGOLE CRITICHE SULL'INDIRIZZO:
+Per ogni visita estratta, se viene menzionata un'azienda e un comune o città parziale (es. "ratti guanzate" o "tetra pak modena"), sforzati di individuare l'indirizzo stradale completo e preciso di questa filiale/fabbrica in Italia.
+Se non riesci ad ottenere la via esatta, scrivi come minimo "Comune, SiglaProvincia, Italia" (es. "Guanzate, CO, Italia" oppure "Modena, MO, Italia"). Non inserire mai diciture troncate o solo il nome del paese senza sigla provincia se puoi dedurla.
 
 Restituisci l'elenco completo in formato JSON valido che rispecchia rigorosamente lo schema indicato.`;
 
@@ -142,6 +142,7 @@ Restituisci l'elenco completo in formato JSON valido che rispecchia rigorosament
       contents: systemPrompt,
       config: {
         responseMimeType: "application/json",
+        tools: [{ googleSearch: {} }],
         responseSchema: {
           type: Type.ARRAY,
           description: "Lista di visite commerciali estratte e assegnate ai giorni disponibili",
@@ -195,6 +196,11 @@ Data predefinita se non specificata diversamente nel testo: ${defaultDate || "Co
 TESTO LIBERO:
 "${text}"
 
+ISTRUZIONI CRITICHE SULL'INDIRIZZO:
+Se viene menzionata un'azienda e un comune o città (es. "ratti guanzate" o "famar abbbiategrasso"), sforzati di individuare l'indirizzo stradale completo, reale e preciso di questa azienda in Italia (es. "Via Tornese, 10, 22070 Guanzate CO").
+Se per qualche motivo non trovi l'indirizzo stradale esatto dell'azienda, espandi comunque l'indirizzo formattandolo come dicitura corretta con provincia in Italia (es. "Guanzate, CO, Italia" oppure "Guanzate, Como, Italia") in modo che possa essere geolocalizzato in seguito facilmente.
+Non impostare come campo indirizzo semplicemente la parola dell'appunto se contiene solo nome azienda e città; trasforma indirizzo in una dicitura stradale valida e geolocalizzabile.
+
 Estrai e restituisci un oggetto JSON strutturato secondo i campi richiesti. Completa le informazioni mancanti basandoti su deduzioni logiche se possibile.`;
 
     const response = await ai.models.generateContent({
@@ -202,11 +208,12 @@ Estrai e restituisci un oggetto JSON strutturato secondo i campi richiesti. Comp
       contents: prompt,
       config: {
         responseMimeType: "application/json",
+        tools: [{ googleSearch: {} }],
         responseSchema: {
           type: Type.OBJECT,
           properties: {
             azienda: { type: Type.STRING, description: "Nome dell'azienda visitata" },
-            indirizzo: { type: Type.STRING, description: "Indirizzo o città principale emersa nel testo" },
+            indirizzo: { type: Type.STRING, description: "Indirizzo o città principale emersa nel testo, possibilmente estesa a via/cap/provincia" },
             data: { type: Type.STRING, description: "Data pianificata YYYY-MM-DD" },
             orario: { type: Type.STRING, description: "Orario dell'incontro formato HH:MM" },
             notePreVisita: { type: Type.STRING, description: "Obbiettivi o contesto pre-incontro" },
