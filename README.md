@@ -1,6 +1,6 @@
 # FiSalesNav (Field Sales Navigation Planner) - v1.0.0
 
-A high-performance, responsive full-stack web application designed for industrial field sales engineers (specifically optimized for automation reps such as Pepperl+Fuchs agents) to plan itineraries, navigate route stops geographically, and capture formatted client debrief logs with live Google Gemini AI support.
+A high-performance, responsive full-stack web application designed for industrial field sales engineers (specifically optimized for automation sales representatives) to plan itineraries, navigate route stops geographically, and capture formatted client debrief logs with live Google Gemini AI support.
 
 ---
 

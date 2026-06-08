@@ -102,7 +102,7 @@ export const DebriefModal: React.FC<DebriefModalProps> = ({
         <div className="flex items-center justify-between border-b px-6 py-4">
           <div>
             <h2 className="text-lg font-bold text-slate-900">Debriefing Visita</h2>
-            <p className="text-xs font-semibold text-orange-600 tracking-tight mt-0.5">{visit.azienda}</p>
+            <p className="text-xs font-semibold text-blue-600 tracking-tight mt-0.5">{visit.azienda}</p>
           </div>
           <button
             onClick={onClose}
@@ -121,7 +121,7 @@ export const DebriefModal: React.FC<DebriefModalProps> = ({
             <select
               value={esito}
               onChange={(e) => setEsito(e.target.value)}
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 bg-white focus:outline-hidden focus:border-orange-500"
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 bg-white focus:outline-hidden focus:border-blue-500"
             >
               <option value="Positivo">Positivo (Trattativa avviata)</option>
               <option value="Da seguire">Da seguire (In attesa di dati)</option>
@@ -139,7 +139,7 @@ export const DebriefModal: React.FC<DebriefModalProps> = ({
               value={quickNote}
               onChange={(e) => setQuickNote(e.target.value)}
               placeholder="E.g. Incontro con Ing. Rossi. Molto interessato a IO-Link. Linea ferma per test ad agosto."
-              className="w-full rounded-lg border border-slate-200 p-3 text-sm text-slate-800 focus:outline-hidden focus:border-orange-500 resize-none"
+              className="w-full rounded-lg border border-slate-200 p-3 text-sm text-slate-800 focus:outline-hidden focus:border-blue-500 resize-none"
             />
           </div>
 
@@ -153,7 +153,7 @@ export const DebriefModal: React.FC<DebriefModalProps> = ({
                 type="button"
                 onClick={handleAiRefine}
                 disabled={refining}
-                className="flex items-center gap-1.5 text-xs font-bold text-orange-600 hover:text-orange-700 disabled:opacity-40"
+                className="flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-700 disabled:opacity-40"
               >
                 {refining ? (
                   <>
@@ -162,7 +162,7 @@ export const DebriefModal: React.FC<DebriefModalProps> = ({
                   </>
                 ) : (
                   <>
-                    <Sparkles className="w-3.5 h-3.5 text-orange-500 animate-pulse" />
+                    <Sparkles className="w-3.5 h-3.5 text-blue-500 animate-pulse" />
                     Migliora e Genera con AI
                   </>
                 )}
@@ -181,7 +181,7 @@ export const DebriefModal: React.FC<DebriefModalProps> = ({
               value={report}
               onChange={(e) => setReport(e.target.value)}
               placeholder="Premi 'Genera con AI' per comporre automaticamente una stesura professionale delle tue note rapide conforme alle direttive aziendali."
-              className="w-full rounded-lg border border-slate-200 p-3 text-sm text-slate-800 focus:outline-hidden focus:border-orange-500 resize-none bg-slate-50 font-serif leading-relaxed"
+              className="w-full rounded-lg border border-slate-200 p-3 text-sm text-slate-800 focus:outline-hidden focus:border-blue-500 resize-none bg-slate-50 font-serif leading-relaxed"
             />
           </div>
         </div>
@@ -207,7 +207,7 @@ export const DebriefModal: React.FC<DebriefModalProps> = ({
             </button>
             <button
               onClick={handleSave}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-orange-600 text-white text-sm font-semibold hover:bg-orange-700 transition-colors shadow-sm"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors shadow-sm"
             >
               <Save className="w-4 h-4" />
               Salva Report

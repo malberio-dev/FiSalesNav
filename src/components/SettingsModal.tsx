@@ -8,6 +8,7 @@ interface SettingsModalProps {
   onClose: () => void;
   onSave: (settings: AppSettings) => void;
   onInjectDemoData: () => void;
+  onClearDemoData: () => void;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -16,6 +17,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onClose,
   onSave,
   onInjectDemoData,
+  onClearDemoData,
 }) => {
   const [userName, setUserName] = useState(settings.userName);
   const [company, setCompany] = useState(settings.company);
@@ -53,7 +55,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between border-b px-6 py-4">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-100 text-orange-600">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
               <Sparkles className="w-4.5 h-4.5" />
             </div>
             <h2 className="text-lg font-bold text-slate-900">Impostazioni & Configurazione AI</h2>
@@ -72,7 +74,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             onClick={() => setActiveTab("profile")}
             className={`px-4 py-3 text-sm font-semibold transition-colors border-b-2 -mb-px ${
               activeTab === "profile"
-                ? "border-orange-600 text-orange-600"
+                ? "border-blue-600 text-blue-600"
                 : "border-transparent text-slate-500 hover:text-slate-800"
             }`}
           >
@@ -82,7 +84,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             onClick={() => setActiveTab("prompts")}
             className={`px-4 py-3 text-sm font-semibold transition-colors border-b-2 -mb-px ${
               activeTab === "prompts"
-                ? "border-orange-600 text-orange-600"
+                ? "border-blue-600 text-blue-600"
                 : "border-transparent text-slate-500 hover:text-slate-800"
             }`}
           >
@@ -92,7 +94,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             onClick={() => setActiveTab("demo")}
             className={`px-4 py-3 text-sm font-semibold transition-colors border-b-2 -mb-px ${
               activeTab === "demo"
-                ? "border-orange-600 text-orange-600"
+                ? "border-blue-600 text-blue-600"
                 : "border-transparent text-slate-500 hover:text-slate-800"
             }`}
           >
@@ -113,7 +115,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     type="text"
                     value={userName}
                     onChange={(e) => setUserName(e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 px-3.5 py-2 text-sm text-slate-800 focus:outline-hidden focus:border-orange-500"
+                    className="w-full rounded-lg border border-slate-200 px-3.5 py-2 text-sm text-slate-800 focus:outline-hidden focus:border-blue-500"
                     placeholder="E.g. Marco Alberio"
                   />
                 </div>
@@ -125,8 +127,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     type="text"
                     value={company}
                     onChange={(e) => setCompany(e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 px-3.5 py-2 text-sm text-slate-800 focus:outline-hidden focus:border-orange-500"
-                    placeholder="E.g. Pepperl+Fuchs SpA"
+                    className="w-full rounded-lg border border-slate-200 px-3.5 py-2 text-sm text-slate-800 focus:outline-hidden focus:border-blue-500"
+                    placeholder="E.g. Automation SpA"
                   />
                 </div>
               </div>
@@ -139,7 +141,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   type="text"
                   value={assignedAreas}
                   onChange={(e) => setAssignedAreas(e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 px-3.5 py-2 text-sm text-slate-800 focus:outline-hidden focus:border-orange-500"
+                  className="w-full rounded-lg border border-slate-200 px-3.5 py-2 text-sm text-slate-800 focus:outline-hidden focus:border-blue-500"
                   placeholder="E.g. Lombardia Ovest, Emilia-Romagna Nord"
                 />
               </div>
@@ -155,7 +157,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       type="text"
                       value={startLocation}
                       onChange={(e) => setStartLocation(e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 px-3.5 py-2 text-sm text-slate-800 focus:outline-hidden focus:border-orange-500"
+                      className="w-full rounded-lg border border-slate-200 px-3.5 py-2 text-sm text-slate-800 focus:outline-hidden focus:border-blue-500"
                       placeholder="E.g. Rovello Porro, CO"
                     />
                   </div>
@@ -167,7 +169,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       type="time"
                       value={startTime}
                       onChange={(e) => setStartTime(e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 px-3.5 py-2 text-sm text-slate-800 focus:outline-hidden focus:border-orange-500"
+                      className="w-full rounded-lg border border-slate-200 px-3.5 py-2 text-sm text-slate-800 focus:outline-hidden focus:border-blue-500"
                     />
                   </div>
                 </div>
@@ -185,7 +187,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   rows={2}
                   value={debriefPrompt}
                   onChange={(e) => setDebriefPrompt(e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 p-3 text-sm text-slate-800 focus:outline-hidden focus:border-orange-500 resize-none font-mono text-xs"
+                  className="w-full rounded-lg border border-slate-200 p-3 text-sm text-slate-800 focus:outline-hidden focus:border-blue-500 resize-none font-mono text-xs"
                   placeholder="Instruzioni per la rifinitura dei report fisici..."
                 />
               </div>
@@ -198,7 +200,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   rows={2}
                   value={importPrompt}
                   onChange={(e) => setImportPrompt(e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 p-3 text-sm text-slate-800 focus:outline-hidden focus:border-orange-500 resize-none font-mono text-xs"
+                  className="w-full rounded-lg border border-slate-200 p-3 text-sm text-slate-800 focus:outline-hidden focus:border-blue-500 resize-none font-mono text-xs"
                 />
               </div>
 
@@ -210,7 +212,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   rows={2}
                   value={summaryPrompt}
                   onChange={(e) => setSummaryPrompt(e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 p-3 text-sm text-slate-800 focus:outline-hidden focus:border-orange-500 resize-none font-mono text-xs"
+                  className="w-full rounded-lg border border-slate-200 p-3 text-sm text-slate-800 focus:outline-hidden focus:border-blue-500 resize-none font-mono text-xs"
                 />
               </div>
 
@@ -222,7 +224,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   type="text"
                   value={reportFormat}
                   onChange={(e) => setReportFormat(e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 px-3.5 py-2 text-sm text-slate-800 focus:outline-hidden focus:border-orange-500"
+                  className="w-full rounded-lg border border-slate-200 px-3.5 py-2 text-sm text-slate-800 focus:outline-hidden focus:border-blue-500"
                   placeholder="E.g. Paragrafi strutturati: Contesto, Discussione, Prossimi Passi"
                 />
               </div>
@@ -231,8 +233,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
           {activeTab === "demo" && (
             <div className="space-y-4">
-              <div className="rounded-xl border border-orange-200 bg-orange-50 p-4 text-sm text-orange-850 flex gap-3">
-                <AlertCircle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
+              <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800 flex gap-3">
+                <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
                 <div>
                   <h4 className="font-bold mb-1">Popola con Dati Demo per Test</h4>
                   <p className="leading-relaxed">
@@ -244,16 +246,26 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </div>
               </div>
 
-              <div className="flex justify-center pt-2">
+              <div className="flex flex-col sm:flex-row justify-center items-center gap-3 pt-2">
                 <button
                   type="button"
                   onClick={() => {
                     onInjectDemoData();
                     onClose();
                   }}
-                  className="px-5 py-3 rounded-xl bg-orange-600 text-white font-semibold text-sm shadow-lg shadow-orange-500/20 hover:bg-orange-700 transition"
+                  className="w-full sm:w-auto px-5 py-3 rounded-xl bg-blue-600 text-white font-semibold text-sm shadow-lg shadow-blue-500/20 hover:bg-blue-700 transition"
                 >
                   Carica 30 Visite Demo
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClearDemoData();
+                    onClose();
+                  }}
+                  className="w-full sm:w-auto px-5 py-3 rounded-xl bg-red-600 text-white font-semibold text-sm shadow-lg shadow-red-500/20 hover:bg-red-700 transition"
+                >
+                  Pulisci Dati Demo
                 </button>
               </div>
             </div>
@@ -270,7 +282,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </button>
           <button
             onClick={handleSave}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-orange-600 text-white text-sm font-semibold hover:bg-orange-700 transition-colors shadow-sm"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors shadow-sm"
           >
             <Save className="w-4 h-4" />
             Salva Modifiche

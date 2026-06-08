@@ -30,7 +30,7 @@ const MILAN_EMILIA_CLIENTS = [
 
 const PRE_VISIT_NOTES_TEMPLATES = [
   "Incontro per discutere la migrazione ai nuovi sensori induttivi con interfaccia IO-Link V1.1. Verificare ostacoli tecnici.",
-  "Cliente interessato alle barriere a sicurezza intrinseca per zona ATEX 1/21. Portare catalogo Pepperl+Fuchs K-System.",
+  "Cliente interessato alle barriere a sicurezza intrinseca per zona ATEX 1/21. Portare catalogo barriere di sicurezza industriali.",
   "Sollecitare feedback sull'offerta per i lettori di codici a barre 2D serie ODT. Proporre prova tecnica sul campo.",
   "Nuovo progetto per magazzini automatici a temperatura controllata. Proporre sensori fotoelettrici serie R100/R200.",
   "Visita conoscitiva con il nuovo responsabile acquisti. Consolidare posizionamento rispetto ai concorrenti storici.",
@@ -46,19 +46,22 @@ export function generateDemoVisits(weekKey: string, weekDates: string[]): SalesV
   // Let's build exactly 30 visits
   // Dates are distributed evenly over the weekDates.
   // We have 5 days, so 6 visits per day.
+  // Exception to satisfy Issue #7: some visits will be created as "Sandbox" drafts (empty date)
   for (let visitIndex = 0; visitIndex < 30; visitIndex++) {
     const dayIndex = visitIndex % weekDates.length;
-    const targetDate = weekDates[dayIndex];
+    // Every 6th visit is a Sandbox draft (no date/time pre-filled)
+    const isSandbox = visitIndex % 6 === 5;
+    const targetDate = isSandbox ? "" : weekDates[dayIndex];
     
     // Pick unique clients modulo 25
     const client = MILAN_EMILIA_CLIENTS[visitIndex % MILAN_EMILIA_CLIENTS.length];
     
     // Pick an orario based on visit sequence within the day
     const timeIndex = Math.floor(visitIndex / weekDates.length) % TIMES.length;
-    let orario = TIMES[timeIndex];
+    let orario = isSandbox ? "" : TIMES[timeIndex];
     
     // If it's the 6th visit of the day, offset slightly to look realistic
-    if (Math.floor(visitIndex / weekDates.length) === 5) {
+    if (!isSandbox && Math.floor(visitIndex / weekDates.length) === 5) {
       orario = "18:00";
     }
 
@@ -81,8 +84,11 @@ export function generateDemoVisits(weekKey: string, weekDates: string[]): SalesV
     });
   }
 
-  // Sort them sequentially by date then time
+  // Sort them sequentially: scheduled visits by date then time, and sandbox draft visits at the end
   return result.sort((a, b) => {
+    if (!a.data && b.data) return 1;
+    if (a.data && !b.data) return -1;
+    if (!a.data && !b.data) return a.azienda.localeCompare(b.azienda);
     if (a.data !== b.data) return a.data.localeCompare(b.data);
     return a.orario.localeCompare(b.orario);
   });

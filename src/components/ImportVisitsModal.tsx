@@ -93,8 +93,8 @@ export const ImportVisitsModal: React.FC<ImportVisitsModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between border-b px-6 py-4">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-100 text-orange-600">
-              <Sparkles className="w-5 h-5 text-orange-600 animate-pulse" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
+              <Sparkles className="w-5 h-5 text-blue-600 animate-pulse" />
             </div>
             <div>
               <h2 className="text-lg font-bold text-slate-900">Import Massivo con AI</h2>
@@ -143,7 +143,7 @@ export const ImportVisitsModal: React.FC<ImportVisitsModalProps> = ({
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
                   placeholder={`E.g.\n- Sacmi Group, Imola il martedì mattina\n- Tetra Pak, Modena il giovedì verso le 15\n- Fare un salto da Sidel a Parma per presentare IO-Link venerdì ore 9\n- Caffè rapido con Barilla lunedì pomeriggio`}
-                  className="w-full rounded-lg border border-slate-200 p-3 text-sm text-slate-800 focus:outline-hidden focus:border-orange-500 font-mono"
+                  className="w-full rounded-lg border border-slate-200 p-3 text-sm text-slate-800 focus:outline-hidden focus:border-blue-500 font-mono"
                 />
               </div>
 
@@ -152,7 +152,7 @@ export const ImportVisitsModal: React.FC<ImportVisitsModalProps> = ({
                   type="button"
                   onClick={handleProcessImport}
                   disabled={parsing || !inputText.trim()}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-orange-600 text-white font-semibold text-sm shadow-lg shadow-orange-500/10 hover:bg-orange-700 transition disabled:opacity-40"
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 text-white font-semibold text-sm shadow-lg shadow-blue-500/10 hover:bg-blue-700 transition disabled:opacity-40"
                 >
                   {parsing ? (
                     <>
@@ -194,7 +194,7 @@ export const ImportVisitsModal: React.FC<ImportVisitsModalProps> = ({
                       <span className="px-2 py-1 rounded bg-slate-100 border text-[11px] font-semibold text-slate-700 font-mono">
                         {p.orario}
                       </span>
-                      <span className="px-2 py-1 rounded bg-orange-50 border border-orange-100 text-[11px] font-bold text-orange-700 font-mono">
+                      <span className="px-2 py-1 rounded bg-blue-50 border border-blue-100 text-[11px] font-bold text-blue-700 font-mono">
                         {formatDateLabel(p.data)}
                       </span>
                     </div>
@@ -227,7 +227,7 @@ export const ImportVisitsModal: React.FC<ImportVisitsModalProps> = ({
           {step === "preview" && (
             <button
               onClick={handleConfirmImport}
-              className="flex items-center gap-1.5 px-5 py-2.5 rounded-lg bg-orange-600 text-white text-sm font-bold hover:bg-orange-700 transition shadow-md"
+              className="flex items-center gap-1.5 px-5 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition shadow-md"
             >
               Conferma ed Importa ({previewVisits.length} Visite)
             </button>

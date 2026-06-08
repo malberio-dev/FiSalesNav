@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Calendar, Plus, Sparkles, Check, ChevronLeft, ChevronRight, HelpCircle } from "lucide-react";
+import { Calendar, Plus, Sparkles, Check, ChevronLeft, ChevronRight, HelpCircle, Search } from "lucide-react";
 import { SalesVisit } from "../types";
 
 interface CalendarTabProps {
@@ -26,6 +26,7 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
   onDeleteVisit,
 }) => {
   const [expandedVisitId, setExpandedVisitId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const todayISO = new Date().toISOString().slice(0, 10);
 
@@ -86,17 +87,29 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2 border-b">
         <div>
           <h2 className="text-sm font-extrabold uppercase tracking-widest text-slate-700 flex items-center gap-1.5 animate-fade-in">
-            <Calendar className="w-4.5 h-4.5 text-orange-600" />
+            <Calendar className="w-4.5 h-4.5 text-blue-600" />
             Agenda Settimana
           </h2>
         </div>
         <button
           onClick={onOpenImportModal}
-          className="flex items-center justify-center gap-1.5 rounded-lg border border-orange-200 bg-orange-50 text-orange-700 px-4 py-2 text-xs font-bold hover:bg-orange-100 transition shadow-xs"
+          className="flex items-center justify-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 px-4 py-2 text-xs font-bold hover:bg-blue-100 transition shadow-xs"
         >
-          <Sparkles className="w-3.5 h-3.5 text-orange-500 animate-pulse" />
+          <Sparkles className="w-3.5 h-3.5 text-blue-500 animate-pulse" />
           Importa Lista AI / Excel
         </button>
+      </div>
+
+      {/* Global Weekly Search Filter bar (GitHub Issue #108) */}
+      <div className="relative">
+        <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Cerca cliente, indirizzo o note commerciali all'interno della settimana..."
+          className="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 focus:outline-hidden focus:border-blue-500 shadow-xs"
+        />
       </div>
 
       {/* 5 Working Days list */}
@@ -107,23 +120,30 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
           // Get all scheduled visits for this date, excluding cancelled visits that were completely pulled out
           const dayVisits = visits
             .filter((v) => v.data === dateStr && v.esito !== "Cancellata/Backlog")
-            .sort((a, b) => a.orario.localeCompare(b.orario));
+            .sort((a, b) => a.orario.localeCompare(b.orario))
+            .filter((v) => {
+              const term = searchQuery.toLowerCase().trim();
+              return !term ||
+                v.azienda.toLowerCase().includes(term) ||
+                (v.indirizzo || "").toLowerCase().includes(term) ||
+                (v.notePreVisita || "").toLowerCase().includes(term);
+            });
 
           return (
             <div
               key={dateStr}
               className={`rounded-2xl border bg-white p-4 transition duration-200 ${
-                isToday ? "border-orange-200 ring-2 ring-orange-500/10 shadow-md bg-white select-none" : "shadow-xs"
+                isToday ? "border-blue-200 ring-2 ring-blue-500/10 shadow-md bg-white" : "shadow-xs"
               }`}
             >
               
               {/* Day Header */}
               <div className="flex items-center justify-between mb-3 pb-2 border-b border-dashed border-slate-100">
                 <div className="flex items-center gap-2">
-                  <div className={`h-2 w-2 rounded-full ${isToday ? "bg-orange-600 animate-pulse" : "bg-slate-300"}`} />
-                  <h4 className={`text-sm font-bold capitalize ${isToday ? "text-orange-700 font-extrabold" : "text-slate-800"}`}>
+                  <div className={`h-2 w-2 rounded-full ${isToday ? "bg-blue-600 animate-pulse" : "bg-slate-300"}`} />
+                  <h4 className={`text-sm font-bold capitalize ${isToday ? "text-blue-700 font-extrabold" : "text-slate-800"}`}>
                     {getDayLabel(dateStr)}
-                    {isToday && <span className="text-xs bg-orange-100 text-orange-700 border border-orange-200 rounded-md px-1.5 py-0.5 ml-2">Oggi</span>}
+                    {isToday && <span className="text-xs bg-blue-100 text-blue-700 border border-blue-200 rounded-md px-1.5 py-0.5 ml-2">Oggi</span>}
                   </h4>
                 </div>
 
@@ -134,7 +154,7 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
                   
                   <button
                     onClick={() => onOpenAddModal(dateStr)}
-                    className="p-1 rounded-md text-orange-600 hover:bg-orange-50 active:bg-orange-100 transition"
+                    className="p-1 rounded-md text-blue-600 hover:bg-blue-50 active:bg-blue-100 transition"
                     title={`Aggiungi visita per il giorno ${dateStr}`}
                   >
                     <Plus className="w-4 h-4" />
@@ -170,7 +190,7 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
                               </span>
                               <span className="text-xs font-extrabold text-slate-800 truncate">
                                 {visit.isDemo ? visit.azienda.replace(" demo", "") : visit.azienda}
-                                {visit.isDemo && <span className="text-orange-500 ml-1 italic font-light font-mono text-[11px]">demo</span>}
+                                {visit.isDemo && <span className="text-blue-500 ml-1 italic font-light font-mono text-[11px]">demo</span>}
                               </span>
                             </div>
                           </div>
@@ -195,8 +215,8 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
                               </p>
                             )}
                             {visit.report && (
-                              <div className="bg-orange-50/30 border border-orange-100 p-2.5 rounded-lg">
-                                <span className="block text-[10px] font-bold text-orange-600 uppercase mb-0.5">Report AI CRM</span>
+                              <div className="bg-blue-50/30 border border-blue-100 p-2.5 rounded-lg">
+                                <span className="block text-[10px] font-bold text-blue-600 uppercase mb-0.5">Report AI CRM</span>
                                 <p className="font-serif italic leading-relaxed text-slate-700">{visit.report}</p>
                               </div>
                             )}
@@ -210,7 +230,7 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
                               </button>
                               <button
                                 onClick={() => onOpenDebrief(visit)}
-                                className="flex items-center gap-1 rounded bg-orange-600 text-white font-bold px-3 py-1.5 hover:bg-orange-700 transition"
+                                className="flex items-center gap-1 rounded bg-blue-600 text-white font-bold px-3 py-1.5 hover:bg-blue-700 transition"
                               >
                                 <Plus className="w-3 h-3" />
                                 {isDone ? "Verifica / Modifica Debrief" : "Invia Debriefing"}

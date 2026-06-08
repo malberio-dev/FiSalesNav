@@ -19,7 +19,7 @@ import { generateDemoVisits } from "./utils/demo";
 // Default settings parameters
 const DEFAULT_SETTINGS: AppSettings = {
   userName: "Alessandro Rossi",
-  company: "Pepperl+Fuchs SpA",
+  company: "Automation SpA",
   assignedAreas: "Lombardia Ovest, Emilia-Romagna",
   startLocation: "Rovello Porro, CO",
   startTime: "08:15",
@@ -186,6 +186,12 @@ export default function App() {
     alert("Dati demo caricati! 30 visite caricate su 25 clienti reali nell'area selezionata.");
   };
 
+  const handleClearDemoData = () => {
+    const sansDemo = visits.filter((v) => !v.isDemo);
+    setVisits(sansDemo);
+    alert("Tutti i dati demo sono stati rimossi con successo!");
+  };
+
   // Database controllers
   const handleAddVisit = (newVisit: SalesVisit) => {
     setVisits((prev) => [...prev, newVisit]);
@@ -311,11 +317,13 @@ export default function App() {
           {activeTab === "sandbox" && (
             <SandboxTab
               visits={visits}
+              settings={settings}
               weekDates={weekDates}
               onAddVisit={handleAddVisit}
               onUpdateVisit={handleUpdateVisit}
               onDeleteVisit={handleDeleteVisit}
               onScheduleVisit={handleScheduleVisit}
+              onUpdateVisitsList={setVisits}
               onOpenAddModal={() => openAddModalForDate("sandbox")}
             />
           )}
@@ -339,6 +347,7 @@ export default function App() {
         onClose={() => setIsSettingsOpen(false)}
         onSave={setSettings}
         onInjectDemoData={handleInjectDemoData}
+        onClearDemoData={handleClearDemoData}
       />
 
       {/* Add Visit Modal component (free text / structured dual tabs) */}

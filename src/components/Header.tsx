@@ -85,7 +85,7 @@ export const Header: React.FC<HeaderProps> = ({
           
           {/* Left Area: Logo, Name, Version */}
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-600 text-white font-extrabold shadow-md shadow-orange-500/20">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white font-extrabold shadow-md shadow-blue-500/20">
               FSN
             </div>
             <div>
@@ -94,25 +94,11 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </div>
 
-          {/* Center Area: Current Week Navigator */}
-          <div className="flex items-center justify-center gap-2 rounded-lg bg-slate-50 p-1.5 border border-slate-200">
-            <button
-              onClick={onPrevWeek}
-              className="rounded p-1 text-slate-500 hover:bg-white hover:text-slate-800 transition-colors"
-              title="Settimana precedente"
-            >
-              &larr;
-            </button>
-            <span className="px-3 text-sm font-semibold text-slate-700 font-mono tracking-tight">
+          {/* Center Area: Current Week Identifier */}
+          <div className="flex items-center justify-center gap-2 rounded-lg bg-slate-50 px-3.5 py-1.5 border border-slate-200">
+            <span className="text-sm font-semibold text-slate-700 font-mono tracking-tight">
               Settimana {weekKey}
             </span>
-            <button
-              onClick={onNextWeek}
-              className="rounded p-1 text-slate-500 hover:bg-white hover:text-slate-800 transition-colors"
-              title="Settimana successiva"
-            >
-              &rarr;
-            </button>
           </div>
 
           {/* Right Area: DB status, Actions, Settings */}
@@ -125,7 +111,7 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="flex items-center gap-1">
               <button
                 onClick={onDownloadSnapshot}
-                className="p-2 text-slate-600 hover:text-orange-600 rounded-lg hover:bg-slate-50 transition-colors"
+                className="p-2 text-slate-600 hover:text-blue-600 rounded-lg hover:bg-slate-50 transition-colors"
                 title="Scarica snapshot (Backup JSON)"
               >
                 <Download className="w-4.5 h-4.5" />
@@ -133,7 +119,7 @@ export const Header: React.FC<HeaderProps> = ({
 
               <button
                 onClick={handleUploadClick}
-                className="p-2 text-slate-600 hover:text-orange-600 rounded-lg hover:bg-slate-50 transition-colors"
+                className="p-2 text-slate-600 hover:text-blue-600 rounded-lg hover:bg-slate-50 transition-colors"
                 title="Carica snapshot (Pianificazione complessa)"
               >
                 <Upload className="w-4.5 h-4.5" />
@@ -151,7 +137,7 @@ export const Header: React.FC<HeaderProps> = ({
 
               <button
                 onClick={onOpenSettings}
-                className="p-2 text-slate-600 hover:text-orange-600 rounded-lg hover:bg-slate-50 transition-colors"
+                className="p-2 text-slate-600 hover:text-blue-600 rounded-lg hover:bg-slate-50 transition-colors"
                 title="Impostazioni utente e Prompt AI"
               >
                 <Settings className="w-4.5 h-4.5" />

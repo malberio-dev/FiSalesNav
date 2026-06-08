@@ -75,11 +75,13 @@ export async function geocodeAddress(address: string): Promise<[number, number] 
     }
   }
 
-  // Live OSM request
+  // Live OSM request after cleaning parentheses (such as (BG) or (MO))
+  const queryAddress = address.replace(/\s*\([a-zA-Z]{2}\)/g, "");
+
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3000);
-    const query = `${encodeURIComponent(address)}, Italy`;
+    const timeoutId = setTimeout(() => controller.abort(), 3500);
+    const query = `${encodeURIComponent(queryAddress)}, Italy`;
     const res = await fetch(
       `https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`,
       { signal: controller.signal }
@@ -96,7 +98,41 @@ export async function geocodeAddress(address: string): Promise<[number, number] 
       }
     }
   } catch (error) {
-    console.error("OSM Geocoding failed, falling back to random coordinate offset near Milan", error);
+    console.error("OSM Geocoding failed, trying town fallback", error);
+  }
+
+  // Fallback: extract and geocode only the Comune as requested by Issue #10
+  try {
+    const parts = queryAddress.split(",");
+    let comuneCandidate = "";
+    if (parts.length > 1) {
+      comuneCandidate = parts[1].trim();
+    } else {
+      comuneCandidate = parts[0].trim();
+    }
+
+    if (comuneCandidate && comuneCandidate.toLowerCase() !== queryAddress.toLowerCase()) {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3500);
+      const query = `${encodeURIComponent(comuneCandidate)}, Italy`;
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`,
+        { signal: controller.signal }
+      );
+      clearTimeout(timeoutId);
+
+      if (res.ok) {
+        const list = await res.json();
+        if (list && list.length > 0) {
+          const coords: [number, number] = [parseFloat(list[0].lat), parseFloat(list[0].lon)];
+          geoCache[cleanAddress] = coords;
+          saveGeoCache();
+          return coords;
+        }
+      }
+    }
+  } catch (e) {
+    console.error("OSM town fallback failed, resorting to static offset", e);
   }
 
   // Fallback coords centered near Milan, with a slight hash offset to keep multiple addresses geographically unique
@@ -178,4 +214,52 @@ export async function calculateRouteLegs(
   }
 
   return result;
+}
+
+export async function optimizeRouteSequence(
+  startAddress: string,
+  visits: { id: string; address: string }[]
+): Promise<string[]> {
+  if (visits.length <= 1) return visits.map(v => v.id);
+
+  // 1. Geocode everything
+  const startCoords = await geocodeAddress(startAddress);
+  const coordsList: ([number, number] | null)[] = [];
+  for (const v of visits) {
+    coordsList.push(await geocodeAddress(v.address));
+  }
+
+  // Helper distance function
+  const getDist = (c1: [number, number] | null, c2: [number, number] | null): number => {
+    if (!c1 || !c2) return 10;
+    return getHaversineDistanceKm(c1[0], c1[1], c2[0], c2[1]);
+  };
+
+  const n = visits.length;
+  const visited = new Array(n).fill(false);
+  const optimalOrder: number[] = [];
+
+  let currentCoords = startCoords;
+  for (let step = 0; step < n; step++) {
+    let nearestIndex = -1;
+    let minDistance = Infinity;
+
+    for (let i = 0; i < n; i++) {
+      if (!visited[i]) {
+        const d = getDist(currentCoords, coordsList[i]);
+        if (d < minDistance) {
+          minDistance = d;
+          nearestIndex = i;
+        }
+      }
+    }
+
+    if (nearestIndex !== -1) {
+      visited[nearestIndex] = true;
+      optimalOrder.push(nearestIndex);
+      currentCoords = coordsList[nearestIndex];
+    }
+  }
+
+  return optimalOrder.map(idx => visits[idx].id);
 }

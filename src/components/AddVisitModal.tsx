@@ -87,7 +87,7 @@ export const AddVisitModal: React.FC<AddVisitModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between border-b px-6 py-4">
           <div className="flex items-center gap-2">
-            <Plus className="w-5 h-5 text-orange-600" />
+            <Plus className="w-5 h-5 text-blue-600" />
             <h2 className="text-lg font-bold text-slate-900">Nuova Visita Commerciale</h2>
           </div>
           <button
@@ -104,7 +104,7 @@ export const AddVisitModal: React.FC<AddVisitModalProps> = ({
             onClick={() => setActiveTab("ai")}
             className={`px-4 py-3 text-sm font-semibold transition-colors border-b-2 -mb-px ${
               activeTab === "ai"
-                ? "border-orange-600 text-orange-600"
+                ? "border-blue-600 text-blue-600"
                 : "border-transparent text-slate-500 hover:text-slate-800"
             }`}
           >
@@ -114,7 +114,7 @@ export const AddVisitModal: React.FC<AddVisitModalProps> = ({
             onClick={() => setActiveTab("manual")}
             className={`px-4 py-3 text-sm font-semibold transition-colors border-b-2 -mb-px ${
               activeTab === "manual"
-                ? "border-orange-600 text-orange-600"
+                ? "border-blue-600 text-blue-600"
                 : "border-transparent text-slate-500 hover:text-slate-800"
             }`}
           >
@@ -146,7 +146,7 @@ export const AddVisitModal: React.FC<AddVisitModalProps> = ({
                   value={freeText}
                   onChange={(e) => setFreeText(e.target.value)}
                   placeholder="E.g. Visita mercoledì pomeriggio alle 15:00 da Marchesini Group, Bologna. Vediamo l'applicazione di confezionamento con il referente di reparto."
-                  className="w-full rounded-lg border border-slate-200 p-3 text-sm text-slate-800 focus:outline-hidden focus:border-orange-500 resize-none leading-relaxed"
+                  className="w-full rounded-lg border border-slate-200 p-3 text-sm text-slate-800 focus:outline-hidden focus:border-blue-500 resize-none leading-relaxed"
                 />
               </div>
 
@@ -155,7 +155,7 @@ export const AddVisitModal: React.FC<AddVisitModalProps> = ({
                   type="button"
                   onClick={handleAiParse}
                   disabled={parsing || !freeText.trim()}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-orange-600 text-white font-semibold text-sm shadow-lg shadow-orange-500/10 hover:bg-orange-700 transition disabled:opacity-40"
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 text-white font-semibold text-sm shadow-lg shadow-blue-500/10 hover:bg-blue-700 transition disabled:opacity-40"
                 >
                   {parsing ? (
                     <>
@@ -164,7 +164,7 @@ export const AddVisitModal: React.FC<AddVisitModalProps> = ({
                     </>
                   ) : (
                     <>
-                      <Sparkles className="w-4 h-4 text-orange-200 animate-pulse" />
+                      <Sparkles className="w-4 h-4 text-blue-200 animate-pulse" />
                       Estrai e Compila Modulo
                     </>
                   )}
@@ -183,7 +183,7 @@ export const AddVisitModal: React.FC<AddVisitModalProps> = ({
                   value={azienda}
                   onChange={(e) => setAzienda(e.target.value)}
                   placeholder="E.g. Tetra Pak SpA"
-                  className="w-full rounded-lg border border-slate-200 px-3.5 py-2 text-sm text-slate-800 focus:outline-hidden focus:border-orange-500"
+                  className="w-full rounded-lg border border-slate-200 px-3.5 py-2 text-sm text-slate-800 focus:outline-hidden focus:border-blue-500"
                 />
               </div>
 
@@ -196,7 +196,7 @@ export const AddVisitModal: React.FC<AddVisitModalProps> = ({
                   value={indirizzo}
                   onChange={(e) => setIndirizzo(e.target.value)}
                   placeholder="E.g. Via Dell'Artigianato 10, Modena"
-                  className="w-full rounded-lg border border-slate-200 px-3.5 py-2 text-sm text-slate-800 focus:outline-hidden focus:border-orange-500"
+                  className="w-full rounded-lg border border-slate-200 px-3.5 py-2 text-sm text-slate-800 focus:outline-hidden focus:border-blue-500"
                 />
               </div>
 
@@ -209,7 +209,7 @@ export const AddVisitModal: React.FC<AddVisitModalProps> = ({
                     type="date"
                     value={data}
                     onChange={(e) => setData(e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 px-3.5 py-2 text-sm text-slate-800 focus:outline-hidden focus:border-orange-500"
+                    className="w-full rounded-lg border border-slate-200 px-3.5 py-2 text-sm text-slate-800 focus:outline-hidden focus:border-blue-500"
                   />
                 </div>
                 <div>
@@ -220,7 +220,7 @@ export const AddVisitModal: React.FC<AddVisitModalProps> = ({
                     type="time"
                     value={orario}
                     onChange={(e) => setOrario(e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 px-3.5 py-2 text-sm text-slate-800 focus:outline-hidden focus:border-orange-500"
+                    className="w-full rounded-lg border border-slate-200 px-3.5 py-2 text-sm text-slate-800 focus:outline-hidden focus:border-blue-500"
                   />
                 </div>
               </div>
@@ -234,7 +234,7 @@ export const AddVisitModal: React.FC<AddVisitModalProps> = ({
                   value={notePreVisita}
                   onChange={(e) => setNotePreVisita(e.target.value)}
                   placeholder="E.g. Portare catalogo barriere fotoelettriche piane. Verificare compatibilità PLC"
-                  className="w-full rounded-lg border border-slate-200 p-3 text-sm text-slate-800 focus:outline-hidden focus:border-orange-500 resize-none font-sans"
+                  className="w-full rounded-lg border border-slate-200 p-3 text-sm text-slate-800 focus:outline-hidden focus:border-blue-500 resize-none font-sans"
                 />
               </div>
 
@@ -249,7 +249,7 @@ export const AddVisitModal: React.FC<AddVisitModalProps> = ({
                 <button
                   type="submit"
                   disabled={!azienda.trim()}
-                  className="px-5 py-2.5 rounded-lg bg-orange-600 text-white text-sm font-semibold hover:bg-orange-700 transition"
+                  className="px-5 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition"
                 >
                   Crea Visita
                 </button>

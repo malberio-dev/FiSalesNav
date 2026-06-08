@@ -35,9 +35,9 @@ export const BacklogTab: React.FC<BacklogTabProps> = ({
     <div className="space-y-4">
       
       {/* Intro info Banner */}
-      <div className="rounded-2xl border bg-slate-50/70 p-4 text-xs text-slate-600 leading-relaxed space-y-1.5 select-none animate-fade-in">
+      <div className="rounded-2xl border bg-slate-50/70 p-4 text-xs text-slate-600 leading-relaxed space-y-1.5 animate-fade-in">
         <h3 className="font-bold text-slate-800 flex items-center gap-1.5 text-sm">
-          <Archive className="w-4.5 h-4.5 text-orange-600" />
+          <Archive className="w-4.5 h-4.5 text-blue-600" />
           Arretrati & Visite Cancellate (Backlog)
         </h3>
         <p>
@@ -51,7 +51,7 @@ export const BacklogTab: React.FC<BacklogTabProps> = ({
       </div>
 
       {backlogVisits.length === 0 ? (
-        <div className="rounded-xl border border-dashed p-10 text-center bg-slate-50/20 select-none">
+        <div className="rounded-xl border border-dashed p-10 text-center bg-slate-50/20">
           <Archive className="mx-auto h-10 w-10 text-slate-300" />
           <h4 className="mt-3 text-sm font-bold text-slate-900">Il Backlog è vuoto</h4>
           <p className="mt-1 text-xs text-slate-400">Ottimo lavoro! Non ci sono visite in sospeso o appuntamenti annullati da riprogrammare.</p>
@@ -64,7 +64,7 @@ export const BacklogTab: React.FC<BacklogTabProps> = ({
             return (
               <div
                 key={visit.id}
-                className="rounded-xl border bg-white shadow-xs p-4 space-y-3 hover:border-slate-300 transition select-none"
+                className="rounded-xl border bg-white shadow-xs p-4 space-y-3 hover:border-slate-300 transition"
               >
                 {/* Header */}
                 <div
@@ -74,7 +74,7 @@ export const BacklogTab: React.FC<BacklogTabProps> = ({
                   <div className="min-w-0 pr-2">
                     <h4 className="font-extrabold text-slate-900 text-sm truncate">
                       {visit.isDemo ? visit.azienda.replace(" demo", "") : visit.azienda}
-                      {visit.isDemo && <span className="text-orange-500 ml-1 italic font-light font-mono text-[11px]">demo</span>}
+                      {visit.isDemo && <span className="text-blue-500 ml-1 italic font-light font-mono text-[11px]">demo</span>}
                     </h4>
                     <p className="text-xs text-slate-500 font-mono truncate">{visit.indirizzo}</p>
                   </div>

@@ -96,7 +96,7 @@ ${v.report || v.quickNote || "Visita effettuata con successo."}`;
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2 border-b">
         <div>
           <h2 className="text-sm font-extrabold uppercase tracking-widest text-slate-700">Riepilogo e Export CRM</h2>
-          <p className="text-xs text-slate-500">Esporta i report d'incontro per alimentare velocemente il CRM Pepperl+Fuchs</p>
+          <p className="text-xs text-slate-500">Esporta i report d'incontro per alimentare velocemente il tuo CRM aziendale</p>
         </div>
 
         <button
@@ -110,7 +110,7 @@ ${v.report || v.quickNote || "Visita effettuata con successo."}`;
       </div>
 
       {/* Metric summary counts */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 select-none">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div className="rounded-xl border bg-slate-50/50 p-3 text-center">
           <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Pianificate</span>
           <span className="text-xl font-extrabold text-slate-700">{visits.length}</span>
@@ -121,7 +121,7 @@ ${v.report || v.quickNote || "Visita effettuata con successo."}`;
         </div>
         <div className="rounded-xl border bg-slate-50/50 p-3 text-center">
           <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Lead Positivi</span>
-          <span className="text-xl font-extrabold text-orange-600">
+          <span className="text-xl font-extrabold text-blue-600">
             {completedVisits.filter((v) => v.esito === "Positivo").length}
           </span>
         </div>
@@ -138,11 +138,11 @@ ${v.report || v.quickNote || "Visita effettuata con successo."}`;
 
       {/* AI general operations summary reporting */}
       {completedVisits.length > 0 && (
-        <div className="rounded-2xl border bg-gradient-to-r from-orange-50/20 to-orange-50/70 p-5 space-y-4 shadow-xs">
+        <div className="rounded-2xl border bg-gradient-to-r from-blue-50/20 to-blue-50/70 p-5 space-y-4 shadow-xs">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <div>
               <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
-                <Sparkles className="w-4.5 h-4.5 text-orange-500 animate-pulse" />
+                <Sparkles className="w-4.5 h-4.5 text-blue-500 animate-pulse" />
                 Aggiornamento Settimanale AI per Management
               </h3>
               <p className="text-xs text-slate-500">Gemini trasforma tutti i report della settimana in un'unica e-mail formale per la direzione vendite</p>
@@ -151,7 +151,7 @@ ${v.report || v.quickNote || "Visita effettuata con successo."}`;
             <button
               onClick={handleGenerateWeeklySummary}
               disabled={generating}
-              className="flex items-center gap-1 text-xs font-bold bg-orange-600 text-white rounded-lg px-4 py-2 hover:bg-orange-700 transition shadow-xs"
+              className="flex items-center gap-1 text-xs font-bold bg-blue-600 text-white rounded-lg px-4 py-2 hover:bg-blue-700 transition shadow-xs"
             >
               {generating ? (
                 <>
@@ -178,7 +178,7 @@ ${v.report || v.quickNote || "Visita effettuata con successo."}`;
               <div className="flex justify-end pt-2 border-t">
                 <button
                   onClick={handleCopyReport}
-                  className="flex items-center gap-1.5 text-xs text-orange-600 hover:text-orange-700 font-bold"
+                  className="flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 font-bold"
                 >
                   <Clipboard className="w-4.5 h-4.5" />
                   {copied ? "Copiata negli appunti!" : "Copia Testo per E-mail"}
@@ -200,12 +200,12 @@ ${v.report || v.quickNote || "Visita effettuata con successo."}`;
         ) : (
           <div className="space-y-3.5">
             {completedVisits.map((v) => (
-              <div key={v.id} className="rounded-xl border bg-white shadow-xs p-4 space-y-3 hover:border-slate-300 transition select-none">
+              <div key={v.id} className="rounded-xl border bg-white shadow-xs p-4 space-y-3 hover:border-slate-300 transition">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-2.5 border-b">
                   <div>
                     <h4 className="font-extrabold text-slate-900 text-sm">
                       {v.isDemo ? v.azienda.replace(" demo", "") : v.azienda}
-                      {v.isDemo && <span className="text-orange-500 ml-1 italic font-light font-mono text-[11px]">demo</span>}
+                      {v.isDemo && <span className="text-blue-500 ml-1 italic font-light font-mono text-[11px]">demo</span>}
                     </h4>
                     <span className="text-xs font-mono text-slate-400">{v.data} &bull; {v.orario}</span>
                   </div>
@@ -244,7 +244,7 @@ ${v.report || v.quickNote || "Visita effettuata con successo."}`;
                   <span className="text-slate-300">|</span>
                   <button
                     onClick={() => handleCopySingleCRMText(v)}
-                    className="text-xs font-bold text-orange-600 hover:text-orange-700 transition"
+                    className="text-xs font-bold text-blue-600 hover:text-blue-700 transition"
                   >
                     Copia Record CRM
                   </button>

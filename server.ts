@@ -55,7 +55,7 @@ Prossimi Passaggi: ${visit.nextStep || "Monitorare opportunità"}.`;
   }
 
   try {
-    const prompt = `Sei un assistente AI specializzato per agenti di vendita nel settore automazione industriale (ad es. sensori ed interfacce Pepperl+Fuchs).
+    const prompt = `Sei un assistente AI specializzato per agenti di vendita nel settore automazione industriale (ad es. sensori ed interfacce industriali).
 Il tuo compito è convertire gli appunti rapidi ("quickNote" o "note libere") presi dopo un incontro in un report formale ed elegante in lingua Italiana adatto per il CRM aziendale.
 
 DATI DELLA VISITA:
@@ -241,7 +241,7 @@ app.post("/api/ai/weekly-summary", async (req, res) => {
 
   try {
     // DATI DELLE VISITE COMPLETATE NELLA SETTIMANA
-    const prompt = `Sei un Direttore Vendite o un Senior Sales Engineer che redige una sintesi settimanale professionale ("Weekly Activity Highlights") destinata al management aziendale di Pepperl+Fuchs.
+    const prompt = `Sei un Direttore Vendite o un Senior Sales Engineer che redige una sintesi settimanale professionale ("Weekly Activity Highlights") destinata al management aziendale.
 Analizza l'elenco delle visite effettuate (con esiti positivi o critici, argomenti, ed offerte emesse) e genera un riepilogo discorsivo formale ma accattivante in lingua Italiana.
 
 DATI DELLE VISITE COMPLETATE NELLA SETTIMANA ${weekKey || ""}:
