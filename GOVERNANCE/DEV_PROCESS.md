@@ -68,6 +68,7 @@ Il backlog contiene ciò che si è deciso di fare. L'idea pool contiene ciò che
 
 ### Regole
 
+- Ogni idea è catalogata con un **ID univoco** nel formato `IP-nn` (es. `IP-01`, `IP-02`) e include la **data di inserimento** (formato YYYY-MM-DD).
 - Ogni idea include una stima di **effort** e **valore concreto**
 - Le idee vengono valutate con tre esiti: **pool attivo** · **promossa nel backlog** · **scartata**
 - Le idee scartate non si eliminano – si spostano in una sezione storico con motivazione. La missione può cambiare.
@@ -96,7 +97,8 @@ Il backlog contiene ciò che si è deciso di fare. L'idea pool contiene ciò che
 ### Anatomia di una voce
 
 Ogni voce include:
-- **ID** univoco (es. `U-01`, `BUG-03`, `ENH-07`)
+- **ID** univoco (es. `U-01`, `BUG-03`, `ENH-07` o referenziati con GitHub `GH-nn`)
+- **Data Inserimento** – data in formato YYYY-MM-DD in cui la voce viene registrata nel backlog
 - **Descrizione** chiara e non ambigua
 - **Dipendenze** da altre voci
 - **Effort stimato** – basso / medio / alto
@@ -105,7 +107,7 @@ Ogni voce include:
 ### Regole operative
 
 - Il backlog si aggiorna **obbligatoriamente** al termine di ogni build
-- Le voci completate non si eliminano – si marcano con versione e data
+- Le voci completate non si eliminano – si marcano con versione, data di inserimento e data di chiusura
 - I **bug noti** hanno una sezione dedicata e vengono letti **prima** di ogni build
 - Una voce nel backlog non è un impegno – è una memoria
 
