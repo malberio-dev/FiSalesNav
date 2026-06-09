@@ -4,6 +4,14 @@ Tutte le modifiche e gli aggiornamenti di versione apportati a **FiSalesNav**.
 
 ---
 
+## [v0.3.3] - 2026-06-09
+
+### Aggiunto / Ottimizzato
+- **Robustezza Fallback Quota API**: Implementazione di un meccanismo di ripiego (graceful fallback) automatico a tutela di tutti gli endpoint di Gemini API. In caso di errore di quota (Resource Exhausted 429), API keys malconfigurate o problemi di rete remota, l'applicazione non lancia eccezioni critiche sul client ma risponde istantaneamente con un parser locale o un generatore di sintesi testuale di emergenza, notificando lo stato tramite warning strutturato.
+- **Supporto Registro di Sviluppo Multi-giorno**: Aggiornata la struttura di `DAILY.md` in modalità cumulativa sequenziale per non sovrascrivere la cronologia e preservare la tracciabilità delle decisioni storiche.
+
+---
+
 ## [v0.3.2] - 2026-06-08
 
 ### Query di Build Utilizzata

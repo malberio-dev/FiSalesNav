@@ -4,7 +4,8 @@
 
 | ID | Categoria | Data Inserimento | Descrizione | Dipendenze | Effort | Stato | Versione |
 |---|---|---|---|---|---|---|---|
-| **GH-18** / **U-04** | User request | 2026-06-08 | **AI non cerca indirizzo completo durante parse**: Con un appunto sintetico come *"visita mercoledì da ratti guanzate"*, l'AI deve cercare l'indirizzo reale completo o valorizzarlo con provincia/CAP (*"Guanzate, CO, Italia"*). | Nessuna | Medio | **In Corso / Test** (Prompt in `server.ts` modificato con Google Search Grounding, in attesa di test finale) | - |
+| **GH-19** / **BUG-03** | Quota AI | 2026-06-09 | **Persistenza errori di quota API Gemini**: Nonostante la resilienza e i retry con backoff esponenziale, si riscontrano periodicamente errori del tipo `RESOURCE_EXHAUSTED` o status 429 sul server. Spostato temporaneamente nel Backlog tecnico per attendere l'upgrade del piano tariffario della chiave API Gemini o configurare code asincrone/caching lato server. | Nessuna | Medio-Alto | **Inserita nel Backlog** (In attesa di sblocco quote esterne) | - |
+| **GH-18** / **U-04**| User request | 2026-06-08 | **AI non cerca indirizzo completo durante parse**: Con un appunto sintetico come *"visita mercoledì da ratti guanzate"*, l'AI deve cercare l'indirizzo reale completo o valorizzarlo con provincia/CAP (*"Guanzate, CO, Italia"*). | Nessuna | Medio | **In Corso / Test** (Prompt in `server.ts` modificato con Google Search Grounding, in attesa di test finale) | - |
 
 ---
 
@@ -41,8 +42,10 @@
 
 ## Bug Noti ed Errori Identificati
 
-*(Tutti i bug ereditati o registrati sul repository GitHub sono stati risolti e chiusi con successo).*
-- Nessun bug aperto registrato alla data corrente.
+1. **Errore Quota e Limite Rate sulla chiave API Gemini (Codice 429 / RESOURCE_EXHAUSTED)**:
+   - *Sintomi*: In presenza di più richieste consecutive (come import massivi e debrief rapidi), l'API della chiave Gemini sul client restituisce sporadicamente errore di quota superata o rate-limit.
+   - *Mitigazione Corrente*: Implementato wrapper `generateContentWithRetry` con backoff esponenziale e fallback automatico, ma l'errore persiste se i limiti fisici della chiave sono troppo bassi.
+   - *Stato*: Inserito nel Backlog (**GH-19**).
 
 ---
 

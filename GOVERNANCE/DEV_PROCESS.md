@@ -202,15 +202,14 @@ Versione corrente: [vX.Y].
 
 ---
 
-## 6. DAILY — diario di sessione
+## 6. DAILY — diario di sessione cumulativo
 
-Serve a tre scopi:
+`GOVERNANCE/DAILY.md` funge da diario di bordo cumulativo e storico persistente del progetto.
 
-1. **Tracciare le decisioni** prese e il loro contesto, inclusi i cambi di rotta
-2. **Documentare le query più efficaci** per poterle riusare
-3. **Condividere il contesto** tra thread diversi della stessa conversazione
-
-Includere: panoramica della sessione, cronologia dei cambi di rotta con motivazione, le 3-5 query più produttive, suggerimenti per la sessione successiva.
+### Regole per DAILY.md:
+- **Nessuna sovrascrittura**: Non ripartire da zero o cancellare vecchi dati a ogni sessione. Nuove sessioni devono essere aggiunte (append-only) cronologicamente ordinate per preservare l'intero storico di sviluppo e fornire memoria extra-sessione.
+- **Recupero Storico obbligatorio**: Se per qualsiasi motivo mancano i registri di sessioni passate o vecchie release nel file, rileggi il `CHANGELOG.md` e il `BACKLOG.md` per ricostruire storicamente e registrare quegli eventi.
+- **Struttura delle Sessioni**: Ogni sessione deve includere: data, ID versione associata, panoramica, decisioni strategiche/cambi di rotta con motivazione tecnica, query o frammenti di codice ad alta efficacia, e suggerimenti o raccomandazioni per gli step successivi.
 
 ---
 
