@@ -36,9 +36,8 @@ Creare questi file nell'ordine indicato, prima di scrivere codice.
 ```
 GOVERNANCE/MISSION.md       → primo documento da creare
 GOVERNANCE/DEV_PROCESS.md   → questo file (framework condivisibile)
-GOVERNANCE/BACKLOG.md       → lista di tutto ciò che c'è da fare
+GOVERNANCE/BACKLOG.md       → lista di tutto ciò che c'è da fare (include l'Idea Pool come sezioni)
 GOVERNANCE/CHANGELOG.md     → storia di tutto ciò che è stato fatto
-GOVERNANCE/IDEA_POOL.md     → idee non ancora valutate
 GOVERNANCE/DAILY.md         → diario di sessione
 README.md                   → documentazione prodotto (ultima)
 ```
@@ -62,17 +61,17 @@ Deve essere leggibile in 30 secondi. Se non lo è, è troppo lungo.
 
 ---
 
-## 2. Idea Pool — separare le idee dalla pianificazione
+## 2. Idea Pool — separare le idee dalla pianificazione (incorporata nel Backlog)
 
-Il backlog contiene ciò che si è deciso di fare. L'idea pool contiene ciò che *potrebbe* valere la pena fare.
+Il backlog contiene ciò che si è deciso di fare. L'idea pool contiene ciò che *potrebbe* valere la pena fare ed è integrata direttamente all'interno di `GOVERNANCE/BACKLOG.md` come sezioni dedicate per mantenere un unico file di tracciamento centralizzato.
 
 ### Regole
 
 - Ogni idea è catalogata con un **ID univoco** nel formato `IP-nn` (es. `IP-01`, `IP-02`) e include la **data di inserimento** (formato YYYY-MM-DD).
 - Ogni idea include una stima di **effort** e **valore concreto**
 - Le idee vengono valutate con tre esiti: **pool attivo** · **promossa nel backlog** · **scartata**
-- Le idee scartate non si eliminano – si spostano in una sezione storico con motivazione. La missione può cambiare.
-- Il modello AI aggiunge **2 idee per ogni build completata**
+- Le idee scartate non si eliminano – si spostano nella sezione "Idea Pool - Idee Scartate" del Backlog con la relativa motivazione.
+- Il modello AI aggiunge **2 idee a `BACKLOG.md` (sezione Idea Pool) per ogni build completata**
 
 ### Ranking
 
@@ -169,7 +168,7 @@ stabile prima di esaurire i token. Produci la query pre-build.
 Esegui la build vX.Y di [nome progetto] con update mirati (no rewrite completo).
 Scope in ordine: [ID-01 descrizione breve] → [ID-02 descrizione breve] → ...
 Rinviato a vX.Z: [voci escluse con motivazione].
-Al termine: aggiorna APP_VERSION, CHANGELOG, BACKLOG, +2 IDEA_POOL.
+Al termine: aggiorna APP_VERSION, CHANGELOG, BACKLOG (incluso inserimento di +2 idee nel pool attivo).
 Usa update str_replace dove possibile.
 ```
 
@@ -196,8 +195,7 @@ Usa update str_replace dove possibile.
 ```
 Fine sessione. Aggiorna:
 - GOVERNANCE/CHANGELOG.md: aggiungi sezione [vX.Y] con query usata, aggiunto/cambiato/corretto
-- GOVERNANCE/BACKLOG.md: segna completate le voci con versione, aggiorna bug noti
-- GOVERNANCE/IDEA_POOL.md: aggiungi 2 nuove idee con ranking
+- GOVERNANCE/BACKLOG.md: segna completate le voci con versione, aggiorna bug noti e aggiungi 2 nuove idee con ranking sotto la sezione "Idea Pool - Pool Attivo"
 - GOVERNANCE/DAILY.md: aggiungi appendice con decisioni rilevanti e cambi di rotta
 Versione corrente: [vX.Y].
 ```
@@ -253,8 +251,7 @@ Non lo fa. Il sistema di documenti è la memoria persistente del progetto, non l
 ```
 ☐ Aggiornare la costante di versione nel codice
 ☐ Aggiornare GOVERNANCE/CHANGELOG.md
-☐ Aggiornare GOVERNANCE/BACKLOG.md (voci completate + bug noti)
-☐ Aggiungere 2 idee a GOVERNANCE/IDEA_POOL.md
+☐ Aggiornare GOVERNANCE/BACKLOG.md (voci completate + bug noti + inserimento di 2 nuove idee nella sezione "Idea Pool - Pool Attivo")
 ☐ Annotare in GOVERNANCE/DAILY.md le decisioni rilevanti e i cambi di rotta
 ☐ Salvare tutti i file di governance nel progetto
 ```

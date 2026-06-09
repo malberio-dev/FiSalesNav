@@ -40,9 +40,8 @@ To bypass OpenStreetMap or OSRM rate-limiting, `/src/utils/geo.ts` implements a 
 ├── GOVERNANCE/               # Alignment & developmental governance framework
 │   ├── MISSION.md            # Vision statement, scope boundaries, and outputs
 │   ├── DEV_PROCESS.md        # AI copilot / vibecoding session guidelines
-│   ├── BACKLOG.md            # Unified tracking of open/completed items & bug notes
+│   ├── BACKLOG.md            # Unified tracking of open/completed items, bug notes, and Idea Pool
 │   ├── CHANGELOG.md          # Version history and query metrics used per build
-│   ├── IDEA_POOL.md          # Future concepts rated by value/effort ranking
 │   └── DAILY.md              # Session memos, architectural turns, and learnings
 └── src/
     ├── main.tsx              # App main wrapper entrypoint
@@ -75,10 +74,9 @@ Il progetto adotta un rigoroso framework di governance per massimizzare la preci
 I documenti presenti nella directory `/GOVERNANCE/` coordinano l'avanzamento ciclico:
 1. **MISSION.md**: Specifica i limiti funzionali dell'applicazione. Nessuna funzionalità al di fuori dei confini definiti viene mai implementata, proteggendo il codice da frammentazioni e costosi refactoring strutturali.
 2. **DEV_PROCESS.md**: Definisce regole e linee guida per automatizzare i flussi di lavoro, standardizzare l'uso degli aggiornamenti incrementali nel codice (evitando riscritture ad alto consumo di token) e allineare qualunque assistente/copilota AI.
-3. **BACKLOG.md**: Elenco strutturato di richieste utente, migliorie tecniche ed eventuali bug conosciuti, ciascuno con tracciabilità di effort e stato.
+3. **BACKLOG.md**: Elenco strutturato di richieste utente, migliorie tecniche, bug conosciuti ed incubatore di idee future (Idea Pool, suddiviso in idee attive e scartate).
 4. **CHANGELOG.md**: Registro dettagliato dei rilasci di versione, completo delle prompt query strategiche usate per compilare l'app.
-5. **IDEA_POOL.md**: Incubatore disaccoppiato dove risiedono idee future classificate per priorità del valore reale fornito all'utente e complessità stimate.
-6. **DAILY.md**: Diario di bordo persistente con i cambi di rotta e le decisioni tecnologiche condivise tra le diverse sessioni di codifica.
+5. **DAILY.md**: Diario di bordo persistente con i cambi di rotta e le decisioni tecnologiche condivise tra le diverse sessioni di codifica.
 
 ---
 

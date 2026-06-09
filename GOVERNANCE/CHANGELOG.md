@@ -14,7 +14,7 @@ Scope in ordine:
 - BUG-01 Tasto rimuovi non funzionante (Rimozione confirm nativo bloccato dall'iframe)
 - U-01 Itinerario giornata dal calendario (Pulsante di navigazione giornata in CalendarTab)
 - U-02/U-03 Pulsante "Naviga" singolo e allineamento waypoint nell'itinerario Google Maps
-Al termine: aggiorna APP_VERSION, CHANGELOG, BACKLOG, +2 IDEA_POOL.
+Al termine: aggiorna APP_VERSION, CHANGELOG, BACKLOG (con +2 idee nel pool attivo).
 ```
 
 ### Aggiunto
