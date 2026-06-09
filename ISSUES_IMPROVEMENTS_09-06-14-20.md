@@ -192,9 +192,152 @@ are **planning aids only** and support core route optimization.
 
 ---
 
+### #38 - Token counter not updating in UI
+
+**Current Title:** Contatore token non aggiorna
+
+**Proposed Title:** Token counter not updating in UI
+
+**Proposed Description:**
+```
+## Problem
+The token counter/usage display is stuck at zero and not updating as API calls 
+are made, making it impossible for users to track AI token consumption.
+
+## What needs to be done
+- Verify token counting logic is working correctly on the backend
+- Ensure frontend is receiving and displaying updated token values
+- Check that counter updates in real-time after each AI API call
+- Display current session token usage and any limits (if applicable)
+
+## Expected behavior
+- Token counter should display actual AI token consumption
+- Should update after each debriefing, import, parsing, or summary generation
+- Should be visible in the UI (likely in settings or header)
+```
+
+---
+
+### #37 - Document online/offline status badge behavior
+
+**Current Title:** Significato badge onlin/offline /db
+
+**Proposed Title:** Document online/offline status badge behavior
+
+**Proposed Description:**
+```
+## Problem
+The online/offline status badge's purpose is unclear.
+
+## What needs to be done
+- Document what the status badge currently does
+- Clarify if it's a placeholder for future features or active functionality
+- Define what each status state means to users
+```
+
+---
+
+### #36 - Add address validation before saving appointments
+
+**Current Title:** Valida indirizzo
+
+**Proposed Title:** Add address validation before saving appointments
+
+**Proposed Description:**
+```
+## Problem
+Invalid or unverifiable addresses lead to incorrect kilometer calculations. 
+A preliminary validation step would ensure accurate route planning.
+
+## What needs to be done
+- Implement address validation before saving new appointments
+- Validate addresses can be geocoded correctly for km calculation
+- Provide user feedback if address is invalid or unverifiable
+- Ensure km calculations use validated addresses only
+
+## Implementation options
+
+### Option 1: Google Maps integration (requires external API)
+**Dependencies:** Google Maps API key, additional cost
+- Direct geocoding validation via Google Maps API
+- More accurate but adds external dependency and potential costs
+
+### Option 2: User verification button (interim solution, NO dependencies)
+**Dependencies:** None
+- Add "Address valid?" button that opens Google Maps in new tab
+- User manually verifies address location
+- Lightweight, no new code dependencies
+
+### Option 3: Hybrid approach (requires external API)
+**Dependencies:** Google Maps API key, OSRM service
+- Try geocoding with existing OSRM/geo service first
+- If uncertain, show "Address valid?" verification button
+- Fall back to user confirmation as final step
+
+## Benefits
+- Accurate distance calculations based on valid addresses
+- Prevents bad data from affecting route optimization
+```
+
+---
+
+### #35 - Ensure reliable demo data and add debug mode for invalid addresses
+
+**Current Title:** Dati demo con indirizzi errati
+
+**Proposed Title:** Ensure reliable demo data and add debug mode for invalid addresses
+
+**Proposed Description:**
+```
+## Problem
+Demo data needs to be reliable for testing, but we also need a way to test 
+address validation with intentionally invalid data.
+
+## What needs to be done
+- Verify hardcoded demo data addresses are valid and consistent
+- Add a "Debug mode" toggle in settings
+- Allow loading demo data with intentionally invalid addresses for testing
+- Mark problematic addresses in customer names (e.g., "[INVALID] Customer Name")
+- Helps test address validation features when implemented
+
+## Benefits
+- Reliable demo data for normal testing
+- Controlled way to test error handling without modifying hardcoded data
+```
+
+---
+
+### #34 - Investigate inconsistent kilometer calculations
+
+**Current Title:** Stima km non coerente
+
+**Proposed Title:** Investigate inconsistent kilometer calculations
+
+**Proposed Description:**
+```
+## Problem
+Kilometer estimates are often inaccurate and inconsistent:
+- Close addresses show high km estimates
+- Distant addresses show low km estimates
+- Results don't match expected real-world distances
+
+## Possible causes
+- Addresses not geocoded correctly
+- OSRM routing returning unexpected results
+- Fallback Haversine calculation not triggered appropriately
+- Edge cases in km calculation logic
+
+## What needs to be done
+- Investigate and identify root cause of inconsistency
+- Document findings and any patterns discovered
+- Propose fix based on findings
+```
+
+---
+
 ## Next Steps
 
 - Review these proposed improvements in GitHub issues
 - Post comments with the suggested changes for discussion
 - Update issue titles and descriptions accordingly
-- Continue with remaining issues (#38, #37, etc.)
+- Continue with remaining issues (#33, #32, etc.)
