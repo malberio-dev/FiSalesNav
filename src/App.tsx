@@ -241,7 +241,7 @@ export default function App() {
     <div className="min-h-screen bg-slate-50 flex flex-col antialiased">
       <Header
         appName="FiSalesNav"
-        appVersion="v0.3.4"
+        appVersion="v0.3.5"
         weekKey={weekKey}
         dbStatus={dbStatus}
         onDownloadSnapshot={handleDownloadSnapshot}

@@ -4,6 +4,27 @@ Diario di bordo e memoria storica delle decisioni e degli avanzamenti del proget
 
 ---
 
+## Sessione del 2026-06-09 (Tarda Sera) - Navigazione Previste, Trasferimento Sandbox & Integrazione Outlook Drag-and-Drop (v0.3.5)
+
+### Panoramica della Sessione
+In questa sessione abbiamo introdotto importanti miglioramenti strategici di usabilità, integrazione esterna e logistica per gli agenti commerciali sul campo. Tutte le modifiche sono state consolidate e ufficializzate nel rilascio della build **v0.3.5**, e le relative governance sono state aggiornate.
+
+### Decisioni Rilevanti e Avanzamenti Sviluppo
+1. **Navigazione & Preview di altre giornate feriali (GH-28)**:
+   - *Contesto*: Gli agenti avevano bisogno di visualizzare in anticipo gli itinerari stradali futuri direttamente dalla scheda principale "Oggi" senza dover attendere il giorno reale corrente.
+   - *Decisione*: Introdotto un comodo widget di navigazione settimanale. Al clic, l'itinerario e i km programmati vengono ricalcolati in tempo reale in modalità "PREVIEW" per il giorno selezionato. Viene fornito un tasto azzurro "Torna a Oggi" per rientrare fluidamente nell'andamento in tempo reale.
+2. **Importazione dell'Agenda in Sandbox per Simulazioni (GH-29)**:
+   - *Contesto*: Gli agenti desideravano clonare e riordinare un'intera giornata pianificata nel calendario ufficiale all'interno della Sandbox per studiare percorsi alternativi senza scompaginare l'agenda ufficiale.
+   - *Decisione*: Integrato un blocco interattivo in Sandbox che conta le visite in calendario e con un click le trasloca come bozze libere, sbloccando i riordini di tappa TSP.
+3. **Integrazione Drag-and-Drop da Outlook Calendario (GH-30)**:
+   - *Contesto*: Gli agenti ricevono continui inviti d'incontro tramite e-mail di Microsoft Outlook e desiderano schedularli all'istante senza doversi cimentare in compilazioni manuali.
+   - *Decisione*: Predisposti trigger drag-over e drop sopra le colonne giornaliere della tab "Calendario". Sotto drag, l'interfaccia risponde colorando la dropzone in blu cobalto ed estrae l'agenda dal file `.ics` o dal testo trascinato, generando la visita.
+4. **Correzione Contatore Riepilogo (GH-26)**:
+   - *Contesto*: Il contatore "Pianificate" includeva per errore bozze libere e cancellazioni portando a discrepanze visive.
+   - *Decisione*: Corretto l'algoritmo di conteggio per isolare e computare esclusivamente le visite attive della settimana corrente, allineando i dati della SummaryTab.
+
+---
+
 ## Sessione del 2026-06-09 (Notte) - Unificazione Moduli AI, Telemetria Consumi & Rilascio (v0.3.4)
 
 ### Panoramica della Sessione
