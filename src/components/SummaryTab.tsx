@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Download, Sparkles, Clipboard, CheckCircle2, FileSpreadsheet, Loader2, AlertCircle } from "lucide-react";
 import { SalesVisit } from "../types";
-import { fetchWeeklySummary } from "../utils/ai";
+import { fetchWeeklySummary, AIResponseEnvelope } from "../utils/ai";
 import * as XLSX from "xlsx";
 
 interface SummaryTabProps {
@@ -20,6 +20,7 @@ export const SummaryTab: React.FC<SummaryTabProps> = ({
   const [weeklyReport, setWeeklyReport] = useState("");
   const [generating, setGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [aiMeta, setAiMeta] = useState<AIResponseEnvelope<string> | null>(null);
   const [error, setError] = useState("");
 
   // Get completed visits with active esito that aren't backlog
@@ -31,10 +32,16 @@ export const SummaryTab: React.FC<SummaryTabProps> = ({
     if (completedVisits.length === 0) return;
     setGenerating(true);
     setError("");
+    setAiMeta(null);
 
     try {
-      const summaryText = await fetchWeeklySummary(completedVisits, weekKey, customPrompt);
-      setWeeklyReport(summaryText);
+      const response = await fetchWeeklySummary(completedVisits, weekKey, customPrompt);
+      if (response && response.success) {
+        setWeeklyReport(response.data);
+        setAiMeta(response);
+      } else {
+        throw new Error("Formato risposta AI non valido o vuoto.");
+      }
     } catch (err: any) {
       setError(err.message || "Errore nella generazione del report settimanale.");
     } finally {
@@ -51,7 +58,6 @@ export const SummaryTab: React.FC<SummaryTabProps> = ({
   const handleExportXlsx = () => {
     if (completedVisits.length === 0) return;
 
-    // Create rows optimized for CRM bulk absorption
     const dataRows = completedVisits.map((v) => ({
       DATA_VISITA: v.data,
       ORARIO: v.orario,
@@ -64,7 +70,6 @@ export const SummaryTab: React.FC<SummaryTabProps> = ({
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Report Visite sales");
 
-    // Auto-adjust column sizes for beautiful spreadsheet creation
     const max_len = dataRows.reduce((prev: any, next: any) => {
       Object.keys(next).forEach((k) => {
         const val_len = String((next as any)[k]).length;
@@ -175,6 +180,33 @@ ${v.report || v.quickNote || "Visita effettuata con successo."}`;
             <div className="bg-white border p-4 rounded-xl space-y-3 shadow-xs">
               <p className="text-xs font-serif leading-relaxed text-slate-700 whitespace-pre-wrap">{weeklyReport}</p>
               
+              {/* Informative Diagnostic Badge */}
+              {aiMeta && (
+                <div className={`rounded-xl border p-2.5 text-[11px] flex flex-col md:flex-row md:items-center justify-between gap-2 shadow-3xs ${
+                  aiMeta.source === "AI" 
+                    ? "bg-blue-50/40 border-blue-100/70 text-blue-800" 
+                    : "bg-amber-50/50 border-amber-100/70 text-amber-800"
+                }`}>
+                  <div className="flex items-center gap-1.5">
+                    <Sparkles className={`w-3.5 h-3.5 flex-shrink-0 ${aiMeta.source === "AI" ? "text-blue-500 animate-pulse" : "text-amber-500"}`} />
+                    <div>
+                      <span className="font-extrabold">{aiMeta.source === "AI" ? "Consolidato via AI:" : "Resoconto Locale:"}</span>{" "}
+                      <span className="font-mono bg-white px-1.5 py-0.2 rounded border text-[10px] font-bold text-slate-650">{aiMeta.modelUsed}</span>
+                      {Number(aiMeta.retriesTriggered || 0) > 0 && (
+                        <span className="ml-1 text-[10px] text-blue-600 font-bold bg-blue-100 px-1.5 py-0.2 rounded">
+                          +{aiMeta.retriesTriggered} retries
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  {aiMeta.usage && (
+                    <span className="font-mono text-[10px] text-slate-500">
+                      Token consumati: <b>{aiMeta.usage.totalTokenCount}</b> (In: {aiMeta.usage.promptTokenCount} • Out: {aiMeta.usage.candidatesTokenCount})
+                    </span>
+                  )}
+                </div>
+              )}
+
               <div className="flex justify-end pt-2 border-t">
                 <button
                   onClick={handleCopyReport}
@@ -220,8 +252,6 @@ ${v.report || v.quickNote || "Visita effettuata con successo."}`;
                   </span>
                 </div>
 
-                  {/* No other fields shown as requested */}
-
                 {v.report ? (
                   <div className="bg-slate-50/50 p-3 rounded-lg border">
                     <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Note CRM consolidata</span>
@@ -244,7 +274,7 @@ ${v.report || v.quickNote || "Visita effettuata con successo."}`;
                   <span className="text-slate-300">|</span>
                   <button
                     onClick={() => handleCopySingleCRMText(v)}
-                    className="text-xs font-bold text-blue-600 hover:text-blue-700 transition"
+                    className="text-xs font-bold text-blue-600 hover:text-blue-700 transition font-sans"
                   >
                     Copia Record CRM
                   </button>

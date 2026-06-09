@@ -4,6 +4,23 @@ Tutte le modifiche e gli aggiornamenti di versione apportati a **FiSalesNav**.
 
 ---
 
+## [v0.3.4] - 2026-06-09
+
+### Aggiunto / Ottimizzato
+- **Unificazione Moduli & Helper AI**: Consolidato l'intero layer client in un unico modulo riutilizzabile ed efficiente (`src/utils/ai.ts`). Creato un formato di busta standard `AIResponseEnvelope` per uniformare l'interazione con il backend.
+- **Pannello Impostazioni AI e Telemetria Consumi**: Introdotta la nuova tab "AI" nel modulo `SettingsModal`, contenente:
+  - Selettori del modello preferito per compiti rapidi/parser (`fastModel`) ed estesi/report (`advancedModel`).
+  - Sliders per personalizzare la resilienza alle quote (numero di retry e delay iniziale di backoff).
+  - Gestione in locale delle statistiche di consumo reali (visualizzazione dei token totali/prompt/risposte, efficacia delle chiamate con calcolo automatico del costo stimato in dollari).
+  - Switch per abilitare o disabilitare il servizio di Google Search Grounding.
+- **Visualizzazione Badge Diagnostici AI**: Inseriti indicatori visivi e didascalici dedicati in tutti i moduli (Pianificatore Massivo, Inserimento Rapido, Debriefing, Riepilogo Settimanale), che mostrano all'utente:
+  - Se il contenuto è stato certificato con successo tramite Helper AI o se ha usufruito del Fallback Meccanico Locale.
+  - Il modello specifico impiegato per la chiamata.
+  - Il quantitativo di Token elaborati per quella singola transazione.
+  - Il computo dei retry necessari al server per bypassare gli intasamenti di quota temporanei.
+
+---
+
 ## [v0.3.3] - 2026-06-09
 
 ### Aggiunto / Ottimizzato
@@ -33,7 +50,7 @@ Al termine: aggiorna APP_VERSION, CHANGELOG, BACKLOG (con +2 idee nel pool attiv
 ### Modificato / Ottimizzato
 - **Parallelizzazione Geocoding**: Le richieste di geocodifica degli indirizzi a OSM e calcolo delle tratte sono state totalmente parallelizzate in `geo.ts` con `Promise.all` per evitare blocchi sequenziali.
 - **Timeout restrittivi**: Abbassati i timeout sulle chiamate di rete in `geo.ts` da `3500ms`/`2000ms` a `1200ms` con abort controller per garantire stabilità e caricamento fluido in qualsiasi condizione di rete debole.
-- **Sincronia Waypoints**: Corretto il formato del link a Google Maps per includere i waypoint intermedi esattamente nell'ordine pianificato dall'applicazione.
+- **Sincronia Waypoints**: Corretto il formato del link a Google Maps per incluirvi i waypoint intermedi esattamente nell'ordine pianificato dall'applicazione.
 
 ### Corretto
 - **Fix Crash Startup**: Rimossa la richiesta di permessi `geolocation` bloccanti da `/metadata.json` poiché bloccava il caricamento dell'app nell'iframe prima di visualizzare l'interfaccia.

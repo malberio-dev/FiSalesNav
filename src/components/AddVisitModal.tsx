@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { X, Sparkles, Loader2, Plus, RefreshCw, AlertCircle } from "lucide-react";
+import { X, Sparkles, Loader2, Plus, AlertCircle } from "lucide-react";
 import { SalesVisit } from "../types";
-import { fetchSingleVisitParse } from "../utils/ai";
+import { fetchSingleVisitParse, AIResponseEnvelope } from "../utils/ai";
 
 interface AddVisitModalProps {
   isOpen: boolean;
@@ -21,6 +21,7 @@ export const AddVisitModal: React.FC<AddVisitModalProps> = ({
   const [activeTab, setActiveTab] = useState<"ai" | "manual">("ai");
   const [freeText, setFreeText] = useState("");
   const [parsing, setParsing] = useState(false);
+  const [aiMeta, setAiMeta] = useState<AIResponseEnvelope<any> | null>(null);
   const [error, setError] = useState("");
 
   // Form Fields
@@ -37,19 +38,27 @@ export const AddVisitModal: React.FC<AddVisitModalProps> = ({
     if (!freeText.trim()) return;
     setParsing(true);
     setError("");
+    setAiMeta(null);
 
     try {
-      const parsed = await fetchSingleVisitParse(freeText, data);
+      const response = await fetchSingleVisitParse(freeText, data);
       
-      // Merge results into inputs
-      if (parsed.azienda) setAzienda(parsed.azienda);
-      if (parsed.indirizzo) setIndirizzo(parsed.indirizzo);
-      if (parsed.data) setData(parsed.data);
-      if (parsed.orario) setOrario(parsed.orario);
-      if (parsed.notePreVisita) setNotePreVisita(parsed.notePreVisita);
-      if (parsed.quickNote) setQuickNote(parsed.quickNote);
+      if (response && response.success && response.data) {
+        const parsed = response.data;
+        setAiMeta(response);
+        
+        // Merge results into inputs
+        if (parsed.azienda) setAzienda(parsed.azienda);
+        if (parsed.indirizzo) setIndirizzo(parsed.indirizzo);
+        if (parsed.data) setData(parsed.data);
+        if (parsed.orario) setOrario(parsed.orario);
+        if (parsed.notePreVisita) setNotePreVisita(parsed.notePreVisita);
+        if (parsed.quickNote) setQuickNote(parsed.quickNote);
 
-      setActiveTab("manual"); // Switch to manual to let them review and save!
+        setActiveTab("manual"); // Switch to manual to let them review and save!
+      } else {
+        throw new Error("La risposta dell'AI non contiene campi strutturati validi.");
+      }
     } catch (err: any) {
       setError(err.message || "Errore nel caricamento dei dati AI.");
     } finally {
@@ -87,7 +96,7 @@ export const AddVisitModal: React.FC<AddVisitModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between border-b px-6 py-4">
           <div className="flex items-center gap-2">
-            <Plus className="w-5 h-5 text-blue-600" />
+            <Plus className="w-5 h-5 text-blue-600 animate-pulse" />
             <h2 className="text-lg font-bold text-slate-900">Nuova Visita Commerciale</h2>
           </div>
           <button
@@ -173,6 +182,29 @@ export const AddVisitModal: React.FC<AddVisitModalProps> = ({
             </div>
           ) : (
             <form onSubmit={handleManualAdd} className="space-y-4">
+              
+              {/* Informative Diagnostic Badge */}
+              {aiMeta && (
+                <div className={`rounded-xl border p-2.5 text-[11px] flex items-center justify-between shadow-3xs ${
+                  aiMeta.source === "AI" 
+                    ? "bg-blue-50/40 border-blue-100/70 text-blue-800" 
+                    : "bg-amber-50/50 border-amber-100/70 text-amber-800"
+                }`}>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <Sparkles className={`w-3.5 h-3.5 flex-shrink-0 ${aiMeta.source === "AI" ? "text-blue-500 animate-pulse" : "text-amber-500"}`} />
+                    <div>
+                      <span className="font-extrabold">Estrapolazione AI:</span>{" "}
+                      <span className="font-mono bg-white border px-1 py-0.2 rounded font-bold">{aiMeta.modelUsed}</span>
+                    </div>
+                  </div>
+                  {aiMeta.usage && (
+                    <span className="font-mono text-[9px] text-slate-400">
+                      Token: <b>{aiMeta.usage.totalTokenCount}</b>
+                    </span>
+                  )}
+                </div>
+              )}
+
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
                   Ragione Sociale Azienda *
@@ -249,7 +281,7 @@ export const AddVisitModal: React.FC<AddVisitModalProps> = ({
                 <button
                   type="submit"
                   disabled={!azienda.trim()}
-                  className="px-5 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition"
+                  className="px-5 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors shadow-sm"
                 >
                   Crea Visita
                 </button>

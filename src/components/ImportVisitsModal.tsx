@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { X, Sparkles, Loader2, Play, CheckCircle2, AlertCircle } from "lucide-react";
 import { SalesVisit } from "../types";
-import { fetchImportVisits } from "../utils/ai";
+import { fetchImportVisits, AIResponseEnvelope } from "../utils/ai";
 
 interface ImportVisitsModalProps {
   isOpen: boolean;
@@ -23,6 +23,7 @@ export const ImportVisitsModal: React.FC<ImportVisitsModalProps> = ({
   const [inputText, setInputText] = useState("");
   const [parsing, setParsing] = useState(false);
   const [previewVisits, setPreviewVisits] = useState<any[]>([]);
+  const [aiMeta, setAiMeta] = useState<AIResponseEnvelope<any[]> | null>(null);
   const [step, setStep] = useState<"input" | "preview">("input");
   const [error, setError] = useState("");
 
@@ -32,17 +33,19 @@ export const ImportVisitsModal: React.FC<ImportVisitsModalProps> = ({
     if (!inputText.trim()) return;
     setParsing(true);
     setError("");
+    setAiMeta(null);
 
     try {
-      const resultObj = await fetchImportVisits(
+      const response = await fetchImportVisits(
         inputText,
         weekKey,
         weekDates,
         customPrompt
       );
       
-      if (resultObj && Array.isArray(resultObj)) {
-        setPreviewVisits(resultObj);
+      if (response && response.success && Array.isArray(response.data)) {
+        setPreviewVisits(response.data);
+        setAiMeta(response);
         setStep("preview");
       } else {
         throw new Error("Formato risposta AI non riconosciuto o vuoto.");
@@ -76,7 +79,6 @@ export const ImportVisitsModal: React.FC<ImportVisitsModalProps> = ({
     onClose();
   };
 
-  // Human friendly day formatter
   const formatDateLabel = (isoDate: string) => {
     try {
       const d = new Date(isoDate);
@@ -170,6 +172,7 @@ export const ImportVisitsModal: React.FC<ImportVisitsModalProps> = ({
             </div>
           ) : (
             <div className="space-y-4">
+              
               <div className="rounded-xl border border-emerald-100 bg-emerald-50/70 p-4 text-xs text-emerald-800 flex gap-2.5">
                 <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
                 <div>
@@ -179,6 +182,38 @@ export const ImportVisitsModal: React.FC<ImportVisitsModalProps> = ({
                   </p>
                 </div>
               </div>
+
+              {/* Informative Diagnostic Badge */}
+              {aiMeta && (
+                <div className={`rounded-xl border p-3 text-xs flex flex-col md:flex-row md:items-center justify-between gap-2 shadow-3xs ${
+                  aiMeta.source === "AI" 
+                    ? "bg-blue-50/40 border-blue-100/70 text-blue-800" 
+                    : "bg-amber-50/50 border-amber-100/70 text-amber-800"
+                }`}>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Sparkles className={`w-4 h-4 flex-shrink-0 ${aiMeta.source === "AI" ? "text-blue-500 animate-pulse" : "text-amber-500"}`} />
+                    <div>
+                      <span className="font-extrabold">
+                        {aiMeta.source === "AI" ? "Elaborato con Helper AI" : "Fallback Meccanico Locale"}
+                      </span>
+                      <span className="mx-1 text-slate-300">•</span>
+                      <span className="font-mono text-[10px] bg-white px-2 py-0.5 rounded border text-slate-600 font-bold">
+                        {aiMeta.modelUsed}
+                      </span>
+                      {Number(aiMeta.retriesTriggered || 0) > 0 && (
+                        <span className="ml-1 text-[10px] text-blue-600 font-bold bg-blue-100 px-1.5 py-0.5 rounded">
+                          +{aiMeta.retriesTriggered} retries
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  {aiMeta.usage && (
+                    <span className="font-mono text-[10px] tracking-tight text-slate-500">
+                      Token: <b>{aiMeta.usage.totalTokenCount}</b> (In: {aiMeta.usage.promptTokenCount} • Out: {aiMeta.usage.candidatesTokenCount})
+                    </span>
+                  )}
+                </div>
+              )}
 
               <div className="divide-y divide-slate-100 border rounded-xl overflow-hidden shadow-xs bg-slate-50">
                 {previewVisits.map((p, idx) => (

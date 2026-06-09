@@ -7,16 +7,20 @@ This file is a persistent, chronological registry of development sessions, archi
 ## 📅 Chronological Activity Log
 
 ### Session 4: June 09, 2026 (Active)
-- **Goal**: Address persistent 429/Resource Exhausted API errors and ineffective engine fallbacks.
+- **Goal**: Address persistent 429/Resource Exhausted API errors & integrate/plan future backlog feature issues.
 - **Root Cause Identified**:
-  - The Gemini API key used by the CRM tool on the free tier faces severe concurrency limits (1-2 concurrent requests) and low requests-per-minute (RPM) constraints.
-  - When concurrent calls were executed or limits hit, the engine immediately threw a 429 error and fell back to a basic text-splitter parser, rendering the experience "ineffective".
-  - The newly introduced `gemini-3.5-flash` model can sometimes face model-specific access/quota restrictions on standard keys.
-- **Solutions Implemented**:
-  1. Built a professional-grade `generateContentWithRetry` wrapper in `server.ts` featuring **Exponential Backoff** retries (retrying up to 3 times with doubling delay).
-  2. Implemented **Model-Tier Fallback Transition** in the retry wrapper: if requests to the preview `gemini-3.5-flash` model trigger 429/Resource Exhausted rate limits 2 times in a row, the engine seamlessly cascades down to the highly-stable `gemini-2.5-flash` production model.
-  3. Ensured that transient spikes are hidden from the user, preventing unnecessary triggering of the basic fallback parser.
-- **Status**: Completed and fully verified via TypeScript compilation. All API routes structurally hardened.
+  - The Gemini API key faces severe limits. Under rapid concurrent schedules or limits, 429 errors trigger.
+  - Sourcing from the Idea Pool, various agent enhancement request issues needed estimation and planning.
+- **Solutions & Planning Implemented**:
+  1. Built a professional-grade `generateContentWithRetry` wrapper in `server.ts` featuring **Exponential Backoff** retries (up to 3 times with doubling delay).
+  2. Implemented **Model-Tier Fallback Transition**: falls back automatically to stable `gemini-2.5-flash` on rate-exhaustion.
+  3. Formally integrated and estimated 5 high-priority feature issues from the Idea Pool into the active Backlog (`/GOVERNANCE/BACKLOG.md`):
+     - **GH-20** (Smart Confirm): Effort **Low**, planned for **v0.4.0**
+     - **GH-21** (Esportazione .ics): Effort **Low**, planned for **v0.4.0**
+     - **GH-22** (Clienti Top): Effort **Low**, planned for **v0.4.0**
+     - **GH-23** (Audio Reader): Effort **Medium**, planned for **v0.5.0**
+     - **GH-24** (Chi c'è vicino?): Effort **Medium**, planned for **v0.5.0**
+- **Status**: Completed and fully verified. No code changes executed to safeguard application stability.
 
 ### Session 3: June 08, 2026
 - **Goal**: Optimize response handling and eliminate redundant integrations.

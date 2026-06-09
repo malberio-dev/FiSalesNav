@@ -24,6 +24,11 @@ export interface AppSettings {
   importPrompt: string;
   summaryPrompt: string;
   reportFormat: string;
+  fastModel?: string;
+  advancedModel?: string;
+  apiRetries?: number;
+  initialDelay?: number;
+  enableSearchGrounding?: boolean;
 }
 
 export interface WeekData {

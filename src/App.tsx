@@ -27,6 +27,11 @@ const DEFAULT_SETTINGS: AppSettings = {
   importPrompt: "Assegna ciascuna riga ad un giorno lavorativo della settimana. Evita di concentrare troppe visite nello stesso giorno. Fornisci per ciascuna riga delle note pre-visita sensate in base al settore industriale.",
   summaryPrompt: "Analizza l'attività settimanale evidenziando l'accoglimento delle soluzioni e gli ordini potenziali.",
   reportFormat: "Report commerciale ad alta leggibilità, strutturato con: Contesto/Opportunità, Richieste del Cliente, Azioni Correttive/Next Steps.",
+  fastModel: "gemini-3.5-flash",
+  advancedModel: "gemini-3.5-flash",
+  apiRetries: 3,
+  initialDelay: 1500,
+  enableSearchGrounding: false,
 };
 
 export default function App() {
@@ -236,7 +241,7 @@ export default function App() {
     <div className="min-h-screen bg-slate-50 flex flex-col antialiased">
       <Header
         appName="FiSalesNav"
-        appVersion="v0.3.3"
+        appVersion="v0.3.4"
         weekKey={weekKey}
         dbStatus={dbStatus}
         onDownloadSnapshot={handleDownloadSnapshot}

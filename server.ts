@@ -45,8 +45,27 @@ function cleanAndParseJSON(text: string | undefined, fallback: any): any {
   }
 }
 
-// Robust wrapper to call Gemini API with automatic retry and model fallback on 429 Resource Exhausted / rate-limit/quota errors.
-async function generateContentWithRetry(params: { model: string; contents: any; config?: any }, retries = 3, initialDelay = 1500): Promise<any> {
+// Standardized Interface representing our unified envelope returning to client
+interface AIEnvelope<T> {
+  success: boolean;
+  data: T;
+  source: "AI" | "Fallback";
+  modelUsed: string;
+  usage?: {
+    promptTokenCount: number;
+    candidatesTokenCount: number;
+    totalTokenCount: number;
+  };
+  retriesTriggered?: number;
+  warning?: string;
+}
+
+// Upgraded, robust wrapper to call Gemini API with automatic retry and model fallback on quota limits.
+async function generateContentWithRetry(
+  params: { model: string; contents: any; config?: any },
+  retries = 3,
+  initialDelay = 1500
+): Promise<{ text: string; modelUsed: string; usageMetadata: any; retriesTriggered: number }> {
   if (!ai) {
     throw new Error("Gemini AI client not initialized.");
   }
@@ -57,10 +76,23 @@ async function generateContentWithRetry(params: { model: string; contents: any; 
 
   while (attempt < retries) {
     try {
-      return await ai.models.generateContent({
+      const response = await ai.models.generateContent({
         ...params,
         model: currentModel,
       });
+
+      const usage = response.usageMetadata || {
+        promptTokenCount: 0,
+        candidatesTokenCount: 0,
+        totalTokenCount: 0
+      };
+
+      return {
+        text: response.text || "",
+        modelUsed: currentModel,
+        usageMetadata: usage,
+        retriesTriggered: attempt,
+      };
     } catch (error: any) {
       attempt++;
       const errorMsg = error.message || "";
@@ -72,12 +104,15 @@ async function generateContentWithRetry(params: { model: string; contents: any; 
                           errorMsg.includes("limit") ||
                           errorMsg.includes("exhausted");
 
-      console.warn(`[AI Attempt ${attempt}/${retries}] Model: ${currentModel} failed. Error: ${errorMsg}`);
+      console.warn(`[AI Attempt ${attempt}/${retries}] Model ${currentModel} failed. Error: ${errorMsg}`);
 
       if (isRateLimit && attempt < retries) {
-        // Fallback model replacement strategy on the second or third attempt
-        if (currentModel === "gemini-3.5-flash" && attempt >= 2) {
-          console.warn("Switching from gemini-3.5-flash to highly-stable gemini-2.5-flash to bypass potential model-specific tier limits.");
+        // Fallback model replacement strategy on successive attempts: switch model tiers to maximize success
+        if (currentModel === "gemini-3.5-flash") {
+          console.warn("Switching from gemini-3.5-flash to highly-stable gemini-3.1-flash-lite to bypass potential model-specific limits.");
+          currentModel = "gemini-3.1-flash-lite";
+        } else if (currentModel === "gemini-3.1-flash-lite" || currentModel === "gemini-2.5-pro") {
+          console.warn(`Switching model to gemini-2.5-flash to bypass potential quota exclusions.`);
           currentModel = "gemini-2.5-flash";
         }
         
@@ -85,25 +120,29 @@ async function generateContentWithRetry(params: { model: string; contents: any; 
         await new Promise((resolve) => setTimeout(resolve, delayMs));
         delayMs *= 2; // exponential backoff
       } else {
-        // If it's not a rate/quota limit, or if we have run out of retries, propagate the error.
         throw error;
       }
     }
   }
+  throw new Error("Tutti i tentativi di chiamata AI sono falliti per limiti di quota.");
 }
 
 // ─────────────────────────────────────────────────────────────
 // API Endpoints for AI Assistance
 // ─────────────────────────────────────────────────────────────
 
-// 1. Refine Debrieifing / Generate CRM Report
+// 1. Refine Debriefing / Generate CRM Report
 app.post("/api/ai/debrief", async (req, res) => {
-  const { visit, customPrompt, reportFormat } = req.body;
+  const { visit, customPrompt, reportFormat, aiConfig } = req.body;
   if (!visit) {
     return res.status(400).json({ error: "Visit data is required" });
   }
 
-  const handleFallback = () => {
+  const model = aiConfig?.advancedModel || "gemini-3.5-flash";
+  const retriesObj = Number(aiConfig?.apiRetries ?? 3);
+  const delayObj = Number(aiConfig?.initialDelay ?? 1500);
+
+  const handleFallback = (): string => {
     return `[Sintesi Locale] Visita data da ${visit.azienda}.
 Esito: ${visit.esito || "Non specificato"}.
 Note raccolte: ${visit.quickNote || "Nessuna nota aggiuntiva"}.
@@ -112,7 +151,14 @@ Prossimi Passaggi: ${visit.nextStep || "Monitorare opportunità"}.`;
   };
 
   if (!ai) {
-    return res.json({ report: handleFallback(), warning: "GEMINI_API_KEY non definita. Uso fallback locale." });
+    const envelope: AIEnvelope<string> = {
+      success: true,
+      data: handleFallback(),
+      source: "Fallback",
+      modelUsed: "Locale (No API Key)",
+      warning: "GEMINI_API_KEY non definita. Utilizzato backup offline limitato.",
+    };
+    return res.json(envelope);
   }
 
   try {
@@ -135,27 +181,48 @@ ${reportFormat || "Genera una sintesi testuale formata da 2 o 3 paragrafi: intro
 
 Fornisci esclusivamente il testo del report finale, senza alcuna introduzione, commento o formattazione markdown inutile.`;
 
-    const response = await generateContentWithRetry({
-      model: "gemini-3.5-flash",
-      contents: prompt,
-    });
+    const result = await generateContentWithRetry(
+      {
+        model,
+        contents: prompt,
+      },
+      retriesObj,
+      delayObj
+    );
 
-    res.json({ report: response.text?.trim() || "Nessun testo generato dall'AI." });
+    const envelope: AIEnvelope<string> = {
+      success: true,
+      data: result.text.trim() || "Nessun testo generato dall'AI.",
+      source: "AI",
+      modelUsed: result.modelUsed,
+      usage: result.usageMetadata,
+      retriesTriggered: result.retriesTriggered,
+    };
+    res.json(envelope);
   } catch (error: any) {
     console.error("AI Debrief error, falling back:", error);
-    res.json({ 
-      report: handleFallback(), 
-      warning: "Servizio AI non disponibile temporaneamente (Quota/Chiamata fallita). Utilizzato motore locale: " + error.message 
-    });
+    const envelope: AIEnvelope<string> = {
+      success: true,
+      data: handleFallback(),
+      source: "Fallback",
+      modelUsed: "Locale (Errore AI)",
+      warning: "Servizio AI sovraccarico. Ripiego offline completato: " + error.message,
+    };
+    res.json(envelope);
   }
 });
 
 // 2. Unstructured mass import parsing
 app.post("/api/ai/import", async (req, res) => {
-  const { text, weekKey, weekDates, customPrompt } = req.body;
+  const { text, weekKey, weekDates, customPrompt, aiConfig } = req.body;
   if (!text) {
     return res.status(400).json({ error: "Text to parse is required" });
   }
+
+  const model = aiConfig?.fastModel || "gemini-3.5-flash";
+  const retriesObj = Number(aiConfig?.apiRetries ?? 3);
+  const delayObj = Number(aiConfig?.initialDelay ?? 1500);
+  const searchGrounding = !!aiConfig?.enableSearchGrounding;
 
   const handleLocalParse = () => {
     const lines = text.split("\n").filter((l: string) => l.trim().length > 3);
@@ -169,13 +236,20 @@ app.post("/api/ai/import", async (req, res) => {
         data: valDate,
         orario: "10:00",
         notePreVisita: "Importato tramite ripiego locale (Quota AI superata). Nota: " + line,
-        quickNote: ""
+        quickNote: "",
       };
     });
   };
 
   if (!ai) {
-    return res.json({ visits: handleLocalParse(), warning: "GEMINI_API_KEY non definita. Uso fallback locale." });
+    const envelope: AIEnvelope<any[]> = {
+      success: true,
+      data: handleLocalParse(),
+      source: "Fallback",
+      modelUsed: "Locale (No API Key)",
+      warning: "GEMINI_API_KEY non definita. Utilizzato parser locale ad hoc.",
+    };
+    return res.json(envelope);
   }
 
   try {
@@ -201,7 +275,7 @@ Se non riesci ad ottenere la via esatta, scrivi come minimo "Comune, SiglaProvin
 
 Restituisci l'elenco completo in formato JSON valido che rispecchia rigorosamente lo schema indicato.`;
 
-    const config = {
+    const config: any = {
       responseMimeType: "application/json",
       responseSchema: {
         type: Type.ARRAY,
@@ -214,36 +288,63 @@ Restituisci l'elenco completo in formato JSON valido che rispecchia rigorosament
             data: { type: Type.STRING, description: "Data pianificata in formato YYYY-MM-DD" },
             orario: { type: Type.STRING, description: "Orario pianificato in formato HH:MM (es: 09:30, 14:00)" },
             notePreVisita: { type: Type.STRING, description: "Sintesi preparatoria o note pre-visita" },
-            quickNote: { type: Type.STRING }
+            quickNote: { type: Type.STRING },
           },
-          required: ["azienda", "data", "orario"]
-        }
-      }
+          required: ["azienda", "data", "orario"],
+        },
+      },
     };
 
-    const response = await generateContentWithRetry({
-      model: "gemini-3.5-flash",
-      contents: systemPrompt,
-      config,
-    });
+    // Activate search grounding for addresses if requested by the client
+    if (searchGrounding) {
+      config.tools = [{ googleSearch: {} }];
+    }
 
-    const parsedVisits = cleanAndParseJSON(response.text, []);
-    res.json({ visits: parsedVisits });
+    const result = await generateContentWithRetry(
+      {
+        model,
+        contents: systemPrompt,
+        config,
+      },
+      retriesObj,
+      delayObj
+    );
+
+    const parsedVisits = cleanAndParseJSON(result.text, []);
+
+    const envelope: AIEnvelope<any[]> = {
+      success: true,
+      data: parsedVisits,
+      source: "AI",
+      modelUsed: result.modelUsed,
+      usage: result.usageMetadata,
+      retriesTriggered: result.retriesTriggered,
+    };
+    res.json(envelope);
   } catch (error: any) {
     console.error("AI Import error, falling back:", error);
-    res.json({ 
-      visits: handleLocalParse(), 
-      warning: "Servizio AI non disponibile temporaneamente (Quota/Chiamata fallita). Utilizzato motore locale: " + error.message 
-    });
+    const envelope: AIEnvelope<any[]> = {
+      success: true,
+      data: handleLocalParse(),
+      source: "Fallback",
+      modelUsed: "Locale (Errore AI)",
+      warning: "Impossibile elaborare con AI. Attivato fallback locale: " + error.message,
+    };
+    res.json(envelope);
   }
 });
 
 // 3. Single-visit free text parsing
 app.post("/api/ai/parse-single", async (req, res) => {
-  const { text, defaultDate } = req.body;
+  const { text, defaultDate, aiConfig } = req.body;
   if (!text) {
     return res.status(400).json({ error: "Text is required" });
   }
+
+  const model = aiConfig?.fastModel || "gemini-3.5-flash";
+  const retriesObj = Number(aiConfig?.apiRetries ?? 3);
+  const delayObj = Number(aiConfig?.initialDelay ?? 1500);
+  const searchGrounding = !!aiConfig?.enableSearchGrounding;
 
   const handleFallback = () => {
     return {
@@ -252,12 +353,19 @@ app.post("/api/ai/parse-single", async (req, res) => {
       data: defaultDate || new Date().toISOString().slice(0, 10),
       orario: "09:00",
       notePreVisita: "Dettaglio generato da ripiego locale (Quota AI superata).",
-      quickNote: text
+      quickNote: text,
     };
   };
 
   if (!ai) {
-    return res.json(handleFallback());
+    const envelope: AIEnvelope<any> = {
+      success: true,
+      data: handleFallback(),
+      source: "Fallback",
+      modelUsed: "Locale (No API Key)",
+      warning: "GEMINI_API_KEY non definita. Uso parsing meccanico sussidiario.",
+    };
+    return res.json(envelope);
   }
 
   try {
@@ -274,7 +382,7 @@ Non impostare come campo indirizzo semplicemente la parola dell'appunto si conti
 
 Estrai e restituisci un oggetto JSON strutturato secondo i campi richiesti. Completa le informazioni mancanti basandoti su deduzioni logiche se possibile.`;
 
-    const config = {
+    const config: any = {
       responseMimeType: "application/json",
       responseSchema: {
         type: Type.OBJECT,
@@ -284,35 +392,60 @@ Estrai e restituisci un oggetto JSON strutturato secondo i campi richiesti. Comp
           data: { type: Type.STRING, description: "Data pianificata YYYY-MM-DD" },
           orario: { type: Type.STRING, description: "Orario dell'incontro formato HH:MM" },
           notePreVisita: { type: Type.STRING, description: "Obbiettivi o contesto pre-incontro" },
-          quickNote: { type: Type.STRING, description: "Eventuali appunti rapidi aggiuntivi" }
+          quickNote: { type: Type.STRING, description: "Eventuali appunti rapidi aggiuntivi" },
         },
-        required: ["azienda", "data"]
-      }
+        required: ["azienda", "data"],
+      },
     };
 
-    const response = await generateContentWithRetry({
-      model: "gemini-3.5-flash",
-      contents: prompt,
-      config,
-    });
+    if (searchGrounding) {
+      config.tools = [{ googleSearch: {} }];
+    }
 
-    const parsedObj = cleanAndParseJSON(response.text, {});
-    res.json(parsedObj);
+    const result = await generateContentWithRetry(
+      {
+        model,
+        contents: prompt,
+        config,
+      },
+      retriesObj,
+      delayObj
+    );
+
+    const parsedObj = cleanAndParseJSON(result.text, {});
+
+    const envelope: AIEnvelope<any> = {
+      success: true,
+      data: parsedObj,
+      source: "AI",
+      modelUsed: result.modelUsed,
+      usage: result.usageMetadata,
+      retriesTriggered: result.retriesTriggered,
+    };
+    res.json(envelope);
   } catch (error: any) {
     console.error("AI Single Parse error, falling back:", error);
-    res.json({
-      ...handleFallback(),
-      warning: "Servizio AI non disponibile temporaneamente (Quota/Chiamata fallita). Utilizzato motore locale: " + error.message
-    });
+    const envelope: AIEnvelope<any> = {
+      success: true,
+      data: handleFallback(),
+      source: "Fallback",
+      modelUsed: "Locale (Errore AI)",
+      warning: "Servizio AI sovraccarico. Ripiego offline abilitato: " + error.message,
+    };
+    res.json(envelope);
   }
 });
 
 // 4. Generate Weekly Summary
 app.post("/api/ai/weekly-summary", async (req, res) => {
-  const { visits, weekKey, customPrompt } = req.body;
+  const { visits, weekKey, customPrompt, aiConfig } = req.body;
   if (!visits || !Array.isArray(visits)) {
     return res.status(400).json({ error: "Completed visits list is required" });
   }
+
+  const model = aiConfig?.advancedModel || "gemini-3.5-flash";
+  const retriesObj = Number(aiConfig?.apiRetries ?? 3);
+  const delayObj = Number(aiConfig?.initialDelay ?? 1500);
 
   const handleFallback = () => {
     const listSummary = visits.map((v: any) => `- ${v.azienda}: Esito: ${v.esito || "Non registrato"}. Prodotti discussi: ${v.prodotti || "—"}`).join("\n");
@@ -320,13 +453,17 @@ app.post("/api/ai/weekly-summary", async (req, res) => {
   };
 
   if (!ai) {
-    return res.json({
-      summary: handleFallback()
-    });
+    const envelope: AIEnvelope<string> = {
+      success: true,
+      data: handleFallback(),
+      source: "Fallback",
+      modelUsed: "Locale (No API Key)",
+      warning: "GEMINI_API_KEY non definita. Sintesi offline generata.",
+    };
+    return res.json(envelope);
   }
 
   try {
-    // DATI DELLE VISITE COMPLETATE NELLA SETTIMANA
     const prompt = `Sei un Direttore Vendite o un Senior Sales Engineer che redige una sintesi settimanale professionale ("Weekly Activity Highlights") destinata al management aziendale.
 Analizza l'elenco delle visite effettuate (con esiti positivi o critici, argomenti, ed offerte emesse) e genera un riepilogo discorsivo formale ma accattivante in lingua Italiana.
 
@@ -345,18 +482,34 @@ ${customPrompt || "Riassumi l'andamento commerciale complessivo, evidenzia le tr
 
 Fornisci esclusivamente il testo del riepilogo (lungo indicativamente 150-250 parole), senza intestazioni markdown o commenti iniziali.`;
 
-    const response = await generateContentWithRetry({
-      model: "gemini-3.5-flash",
-      contents: prompt,
-    });
+    const result = await generateContentWithRetry(
+      {
+        model,
+        contents: prompt,
+      },
+      retriesObj,
+      delayObj
+    );
 
-    res.json({ summary: response.text?.trim() || "Impossibile generare la sintesi settimanale." });
+    const envelope: AIEnvelope<string> = {
+      success: true,
+      data: result.text.trim() || "Impossibile generare la sintesi settimanale.",
+      source: "AI",
+      modelUsed: result.modelUsed,
+      usage: result.usageMetadata,
+      retriesTriggered: result.retriesTriggered,
+    };
+    res.json(envelope);
   } catch (error: any) {
     console.error("AI Weekly Summary error, falling back:", error);
-    res.json({ 
-      summary: handleFallback(),
-      warning: "Servizio AI non disponibile temporaneamente (Quota/Chiamata fallita). Utilizzato motore locale: " + error.message 
-    });
+    const envelope: AIEnvelope<string> = {
+      success: true,
+      data: handleFallback(),
+      source: "Fallback",
+      modelUsed: "Locale (Errore AI)",
+      warning: "Servizio AI sovraccarico. Generato resoconto statico offline: " + error.message,
+    };
+    res.json(envelope);
   }
 });
 

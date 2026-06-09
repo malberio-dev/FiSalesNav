@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { X, Sparkles, AlertCircle, Save, Loader2, ArrowUpRight } from "lucide-react";
 import { SalesVisit } from "../types";
-import { fetchDebrief } from "../utils/ai";
+import { fetchDebrief, AIResponseEnvelope } from "../utils/ai";
 
 interface DebriefModalProps {
   visit: SalesVisit;
@@ -30,6 +30,7 @@ export const DebriefModal: React.FC<DebriefModalProps> = ({
   const [report, setReport] = useState(visit.report || "");
 
   const [refining, setRefining] = useState(false);
+  const [aiMeta, setAiMeta] = useState<AIResponseEnvelope<string> | null>(null);
   const [error, setError] = useState("");
 
   if (!isOpen) return null;
@@ -37,8 +38,8 @@ export const DebriefModal: React.FC<DebriefModalProps> = ({
   const handleAiRefine = async () => {
     setRefining(true);
     setError("");
+    setAiMeta(null);
     try {
-      // Assemble temporary object representing current state of inputs
       const tempVisit: SalesVisit = {
         ...visit,
         esito: esito as any,
@@ -48,8 +49,13 @@ export const DebriefModal: React.FC<DebriefModalProps> = ({
         quickNote,
       };
 
-      const resultText = await fetchDebrief(tempVisit, customPrompt, reportFormat);
-      setReport(resultText);
+      const response = await fetchDebrief(tempVisit, customPrompt, reportFormat);
+      if (response && response.success) {
+        setReport(response.data);
+        setAiMeta(response);
+      } else {
+        throw new Error("Formato risposta AI non valido o vuoto.");
+      }
     } catch (err: any) {
       setError(err.message || "Errore nella comunicazione con Gemini.");
     } finally {
@@ -130,16 +136,56 @@ export const DebriefModal: React.FC<DebriefModalProps> = ({
             </select>
           </div>
 
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div className="sm:col-span-2">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                Prodotti Trattati
+              </label>
+              <input
+                type="text"
+                value={prodotti}
+                onChange={(e) => setProdotti(e.target.value)}
+                placeholder="E.g. Barriere fotoelettriche, IO-Link"
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-000 focus:outline-hidden focus:border-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                N° Offerta CRM
+              </label>
+              <input
+                type="text"
+                value={offerta}
+                onChange={(e) => setOfferta(e.target.value)}
+                placeholder="E.g. OF26-041"
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 focus:outline-hidden focus:border-blue-500"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+              Prossimo Passo (Next Step)
+            </label>
+            <input
+              type="text"
+              value={nextStep}
+              onChange={(e) => setNextStep(e.target.value)}
+              placeholder="E.g. Inviare quotazione entro venerdì"
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 focus:outline-hidden focus:border-blue-500"
+            />
+          </div>
+
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
               Testo Libero / Note Rapide
             </label>
             <textarea
-              rows={4}
+              rows={3}
               value={quickNote}
               onChange={(e) => setQuickNote(e.target.value)}
               placeholder="E.g. Incontro con Ing. Rossi. Molto interessato a IO-Link. Linea ferma per test ad agosto."
-              className="w-full rounded-lg border border-slate-200 p-3 text-sm text-slate-800 focus:outline-hidden focus:border-blue-500 resize-none"
+              className="w-full rounded-lg border border-slate-200 p-3 text-sm text-slate-800 focus:outline-hidden focus:border-blue-500 resize-none font-sans"
             />
           </div>
 
@@ -170,7 +216,7 @@ export const DebriefModal: React.FC<DebriefModalProps> = ({
             </div>
 
             {error && (
-              <div className="mb-2 text-xs font-medium text-red-600 bg-red-50 p-2.5 rounded-lg border border-red-100 flex items-center gap-1.5">
+              <div className="mb-2 text-xs font-medium text-red-605 bg-red-50 p-2.5 rounded-lg border border-red-100 flex items-center gap-1.5">
                 <AlertCircle className="w-4 h-4 flex-shrink-0" />
                 {error}
               </div>
@@ -183,6 +229,33 @@ export const DebriefModal: React.FC<DebriefModalProps> = ({
               placeholder="Premi 'Genera con AI' per comporre automaticamente una stesura professionale delle tue note rapide conforme alle direttive aziendali."
               className="w-full rounded-lg border border-slate-200 p-3 text-sm text-slate-800 focus:outline-hidden focus:border-blue-500 resize-none bg-slate-50 font-serif leading-relaxed"
             />
+
+            {/* Diagnostic reporting badge */}
+            {report && aiMeta && (
+              <div className={`mt-2 rounded-xl border p-2.5 text-[11px] flex items-center justify-between ${
+                aiMeta.source === "AI" 
+                  ? "bg-blue-50/40 border-blue-100/70 text-blue-800" 
+                  : "bg-amber-50/50 border-amber-100/70 text-amber-800"
+              }`}>
+                <div className="flex items-center gap-1.5">
+                  <Sparkles className={`w-3.5 h-3.5 ${aiMeta.source === "AI" ? "text-blue-500 animate-pulse" : "text-amber-500"}`} />
+                  <div>
+                    <span className="font-extrabold">{aiMeta.source === "AI" ? "Report AI Certificato:" : "Sintesi Offline:"}</span>{" "}
+                    <span className="font-mono bg-white px-1.5 py-0.2 rounded border text-[10px] font-bold">{aiMeta.modelUsed}</span>
+                    {Number(aiMeta.retriesTriggered || 0) > 0 && (
+                      <span className="ml-1 text-[10px] text-blue-600 font-bold bg-blue-100/40 px-1 py-0.2 rounded">
+                        +{aiMeta.retriesTriggered} retries
+                      </span>
+                    )}
+                  </div>
+                </div>
+                {aiMeta.usage && (
+                  <span className="font-mono text-[10px] text-slate-500">
+                    Token: <b>{aiMeta.usage.totalTokenCount}</b> (In: {aiMeta.usage.promptTokenCount} • Out: {aiMeta.usage.candidatesTokenCount})
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
