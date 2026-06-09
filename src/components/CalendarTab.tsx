@@ -12,6 +12,7 @@ interface CalendarTabProps {
   onOpenImportModal: () => void;
   onOpenDebrief: (visit: SalesVisit) => void;
   onDeleteVisit: (id: string) => void;
+  onAddVisit: (v: SalesVisit) => void;
   startLocation: string;
 }
 
@@ -25,10 +26,12 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
   onOpenImportModal,
   onOpenDebrief,
   onDeleteVisit,
+  onAddVisit,
   startLocation,
 }) => {
   const [expandedVisitId, setExpandedVisitId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [dragOverDate, setDragOverDate] = useState<string | null>(null);
 
   const todayISO = new Date().toISOString().slice(0, 10);
 
@@ -48,6 +51,124 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
     const waypoints = dayVisits.map((v) => v.indirizzo).join("|");
     const url = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&waypoints=${encodeURIComponent(waypoints)}&travelmode=driving`;
     window.open(url, "_blank");
+  };
+
+  // GH-30 Outlook Drag and Drop Parsers
+  const handleUrlOutlookDrop = async (e: React.DragEvent<HTMLDivElement>, dateStr: string) => {
+    e.preventDefault();
+    setDragOverDate(null);
+
+    // 1. Handle dropped files (like .ics)
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const file = e.dataTransfer.files[0];
+      if (file.name.slice(-4).toLowerCase() === ".ics" || file.type.includes("calendar")) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const content = event.target?.result as string;
+          parseAndInsertIcs(content, dateStr);
+        };
+        reader.readAsText(file);
+        return;
+      }
+    }
+
+    // 2. Handle dropped plain text or raw data transfer
+    const droppedText = e.dataTransfer.getData("text/plain") || e.dataTransfer.getData("text");
+    if (droppedText) {
+      if (droppedText.includes("BEGIN:VCALENDAR")) {
+        parseAndInsertIcs(droppedText, dateStr);
+      } else {
+        parseAndInsertGenericText(droppedText, dateStr);
+      }
+    }
+  };
+
+  const parseAndInsertIcs = (icsText: string, dateStr: string) => {
+    try {
+      let summary = "";
+      let location = "";
+      let description = "";
+      let timeInput = "09:00"; 
+
+      const lines = icsText.split(/\r?\n/);
+      for (const line of lines) {
+        if (line.toUpperCase().startsWith("SUMMARY:")) {
+          summary = line.substring(8).trim();
+        } else if (line.toUpperCase().startsWith("LOCATION:")) {
+          location = line.substring(9).trim();
+        } else if (line.toUpperCase().startsWith("DESCRIPTION:")) {
+          description = line.substring(12).trim().replace(/\\n/g, "\n");
+        } else if (line.toUpperCase().startsWith("DTSTART:")) {
+          const val = line.substring(line.indexOf(":") + 1).trim();
+          const match = val.match(/T(\d{2})(\d{2})/);
+          if (match) {
+            timeInput = `${match[1]}:${match[2]}`;
+          }
+        } else if (line.toUpperCase().startsWith("DTSTART;")) {
+          const val = line.substring(line.indexOf(":") + 1).trim();
+          const match = val.match(/T(\d{2})(\d{2})/);
+          if (match) {
+            timeInput = `${match[1]}:${match[2]}`;
+          }
+        }
+      }
+
+      if (!summary) {
+        summary = "Nuovo Incontro Outlook";
+      }
+
+      const newVisit = {
+        id: `outlook_${Date.now()}`,
+        azienda: summary,
+        indirizzo: location || "Indirizzo da inserire",
+        data: dateStr,
+        orario: timeInput,
+        notePreVisita: description || "Importato da appuntamento Outlook.",
+        quickNote: "",
+        esito: "",
+        prodotti: "",
+        offerta: "",
+        nextStep: "",
+        report: "",
+      };
+
+      onAddVisit(newVisit);
+      alert(`🎉 [Outlook Sync] Importato con successo: "${summary}" alle ${timeInput} per il giorno ${dateStr}!`);
+    } catch (e) {
+      console.error(e);
+      alert("Si è verificato un errore nel parsing dell'appuntamento ICS.");
+    }
+  };
+
+  const parseAndInsertGenericText = (text: string, dateStr: string) => {
+    try {
+      const timeMatch = text.match(/\b([0-1]?[0-9]|2[0-3]):([0-5][0-9])\b/);
+      const timeInput = timeMatch ? `${timeMatch[1].padStart(2, "0")}:${timeMatch[2]}` : "09:00";
+
+      const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+      const summary = lines[0] ? lines[0].substring(0, 50).trim() : "Visita Importata";
+      const description = text;
+
+      const newVisit = {
+        id: `outlook_txt_${Date.now()}`,
+        azienda: summary,
+        indirizzo: "Indirizzo da definire",
+        data: dateStr,
+        orario: timeInput,
+        notePreVisita: description,
+        quickNote: "",
+        esito: "",
+        prodotti: "",
+        offerta: "",
+        nextStep: "",
+        report: "",
+      };
+
+      onAddVisit(newVisit);
+      alert(`🎉 Importato con successo il testo dell'appuntamento: "${summary}" alle ${timeInput} per il giorno ${dateStr}!`);
+    } catch (e) {
+      alert("Errore nel parsing dell'incontro testuale.");
+    }
   };
 
   const getEsitoPill = (esito: string) => {
@@ -123,10 +244,17 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
         />
       </div>
 
+      {/* GH-30 Outlook Sync Hint banner */}
+      <div className="bg-blue-50/40 border border-blue-100/70 p-3 rounded-xl text-center text-xs text-slate-600 flex items-center justify-center gap-2 select-none shadow-3xs">
+        <Sparkles className="w-4 h-4 text-blue-500 animate-pulse" />
+        <span><b>Suggerimento drag-drop Outlook:</b> trascina qui un appunto o un file appuntamento del calendario <b>.ics</b> per pianificarlo all'istante sulla giornata scelta!</span>
+      </div>
+
       {/* 5 Working Days list */}
       <div className="space-y-4">
         {weekDates.map((dateStr) => {
           const isToday = dateStr === todayISO;
+          const isDragOver = dragOverDate === dateStr;
           
           // Get all scheduled visits for this date, excluding cancelled visits that were completely pulled out
           const dayVisits = visits
@@ -143,10 +271,24 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
           return (
             <div
               key={dateStr}
-              className={`rounded-2xl border bg-white p-4 transition duration-200 ${
-                isToday ? "border-blue-200 ring-2 ring-blue-500/10 shadow-md bg-white" : "shadow-xs"
+              onDragOver={(e) => {
+                e.preventDefault();
+                setDragOverDate(dateStr);
+              }}
+              onDragLeave={() => setDragOverDate(null)}
+              onDrop={(e) => handleUrlOutlookDrop(e, dateStr)}
+              className={`rounded-2xl border p-4 transition-all duration-200 relative ${
+                isDragOver ? "border-dashed border-blue-500 bg-blue-50/40 ring-4 ring-blue-500/20 scale-[1.01]" :
+                isToday ? "border-blue-200 ring-2 ring-blue-500/10 shadow-md bg-white" : "border-slate-250 bg-white shadow-xs"
               }`}
             >
+              {isDragOver && (
+                <div className="absolute inset-0 bg-blue-600/95 rounded-2xl flex flex-col items-center justify-center text-white z-25 pointer-events-none p-4 text-center">
+                  <Sparkles className="w-8 h-8 text-blue-200 animate-bounce mb-2" />
+                  <p className="text-xs font-extrabold uppercase tracking-widest">Rilascia l'incontro qui!</p>
+                  <p className="text-[10px] text-blue-100 mt-1">L'agenda Outlook verrà importata e memorizzata per sbloccare l'itinerario</p>
+                </div>
+              )}
               
               {/* Day Header */}
               <div className="flex items-center justify-between mb-3 pb-2 border-b border-dashed border-slate-100">

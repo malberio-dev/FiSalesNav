@@ -6,15 +6,17 @@ import { calculateRouteLegs, TravelLeg, optimizeRouteSequence } from "../utils/g
 interface TodayTabProps {
   visits: SalesVisit[];
   settings: AppSettings;
+  weekDates: string[];
   onUpdateVisit: (updated: SalesVisit) => void;
   onDeleteVisit: (id: string) => void;
   onOpenDebrief: (visit: SalesVisit) => void;
-  onOpenAddModal: () => void;
+  onOpenAddModal: (date?: string) => void;
 }
 
 export const TodayTab: React.FC<TodayTabProps> = ({
   visits,
   settings,
+  weekDates = [],
   onUpdateVisit,
   onDeleteVisit,
   onOpenDebrief,
@@ -35,14 +37,22 @@ export const TodayTab: React.FC<TodayTabProps> = ({
   // Today's date filter
   const todayISO = new Date().toISOString().slice(0, 10);
 
+  // Active date selection state for previewing other days
+  const [selectedDate, setSelectedDate] = useState(() => {
+    if (weekDates.includes(todayISO)) {
+      return todayISO;
+    }
+    return weekDates[0] || todayISO;
+  });
+
   // Search and filter state variables (GitHub Issue #108)
   const [searchQuery, setSearchQuery] = useState("");
   const [filterEsito, setFilterEsito] = useState("Tutti");
   const [isOptimizing, setIsOptimizing] = useState(false);
 
-  // Unfiltered planned stops for today (calculated sequentially)
+  // Unfiltered planned stops for selectedDate (calculated sequentially)
   const plannedTodaysVisits = visits
-    .filter((v) => v.data === todayISO && v.esito !== "Cancellata/Backlog")
+    .filter((v) => v.data === selectedDate && v.esito !== "Cancellata/Backlog")
     .sort((a, b) => a.orario.localeCompare(b.orario));
 
   // Filtered stops shown in UI (search & outcome tags filter)
@@ -176,7 +186,7 @@ export const TodayTab: React.FC<TodayTabProps> = ({
   };
 
   const getFormattedTodayDate = () => {
-    const d = new Date();
+    const d = new Date(selectedDate);
     const days = ["Dom", "Lun", "Mar", "Mer", "Gio", "Ven", "Sab"];
     const months = ["GEN", "FEB", "MAR", "APR", "MAG", "GIU", "LUG", "AGO", "SET", "OTT", "NOV", "DIC"];
     return `${days[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]}`;
@@ -238,10 +248,65 @@ export const TodayTab: React.FC<TodayTabProps> = ({
         )}
       </div>
 
+      {/* GH-28 Navigation & Preview other days of current week */}
+      <div className="rounded-2xl border bg-slate-50/50 p-4 space-y-3 shadow-2xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h3 className="text-xs font-extrabold uppercase tracking-widest text-slate-700 select-none">Navigazione e Preview Giornate</h3>
+            <p className="text-[11px] text-slate-500">Seleziona una giornata della settimana corrente per visualizzarne l'itinerario e ricalcolare i km</p>
+          </div>
+          {weekDates.includes(todayISO) && selectedDate !== todayISO && (
+            <button
+              onClick={() => setSelectedDate(todayISO)}
+              className="text-[10px] font-bold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-2.5 py-1.5 rounded-lg transition select-none flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              Torna a Oggi
+            </button>
+          )}
+        </div>
+
+        <div className="grid grid-cols-5 gap-2">
+          {weekDates.map((dateStr) => {
+            const dateObj = new Date(dateStr);
+            const isSelected = selectedDate === dateStr;
+            const isToday = todayISO === dateStr;
+            const weekday = dateObj.toLocaleDateString("it-IT", { weekday: "short" });
+            const dayNum = dateObj.getDate();
+            const scheduledCount = visits.filter(v => v.data === dateStr && v.esito !== "Cancellata/Backlog").length;
+
+            return (
+              <button
+                key={dateStr}
+                onClick={() => setSelectedDate(dateStr)}
+                className={`flex flex-col items-center justify-center p-2.5 rounded-xl border transition text-center select-none cursor-pointer relative ${
+                  isSelected
+                    ? "bg-blue-600 text-white border-blue-600 shadow-xs"
+                    : "bg-white text-slate-600 hover:bg-slate-50 border-slate-200"
+                }`}
+              >
+                <span className="text-[10px] uppercase font-extrabold tracking-wider opacity-85">{weekday}</span>
+                <span className="text-sm font-extrabold mt-1">{dayNum}</span>
+                {scheduledCount > 0 && (
+                  <span className={`absolute -top-1.5 -right-1.5 text-[9px] font-extrabold w-4.5 h-4.5 rounded-full flex items-center justify-center border ${
+                    isSelected ? "bg-white text-blue-600 border-blue-500" : "bg-slate-800 text-white border-white"
+                  }`}>
+                    {scheduledCount}
+                  </span>
+                )}
+                {isToday && (
+                  <span className={`absolute bottom-1 w-1.5 h-1.5 rounded-full ${isSelected ? "bg-white animate-pulse" : "bg-blue-600"}`} />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Itinerary Title */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-2">
         <h2 className="text-sm font-extrabold uppercase tracking-widest text-slate-700 select-text">
-          OGGI &nbsp;&nbsp;&deg;&nbsp;&nbsp; {getFormattedTodayDate()} &nbsp;&nbsp;&deg;&nbsp;&nbsp; {todaysVisits.length} {todaysVisits.length === 1 ? "visita" : "visite"} {plannedTodaysVisits.length > 0 && `(🚗 ${calculating ? "Ricalcolo km..." : `${legs.reduce((sum, leg) => sum + parseFloat(leg.distanceKm || "0"), 0).toFixed(1)} km`})`}
+          {selectedDate === todayISO ? "OGGI" : "PREVIEW"} &nbsp;&nbsp;&deg;&nbsp;&nbsp; {getFormattedTodayDate()} &nbsp;&nbsp;&deg;&nbsp;&nbsp; {todaysVisits.length} {todaysVisits.length === 1 ? "visita" : "visite"} {plannedTodaysVisits.length > 0 && `(🚗 ${calculating ? "Ricalcolo km..." : `${legs.reduce((sum, leg) => sum + parseFloat(leg.distanceKm || "0"), 0).toFixed(1)} km`})`}
         </h2>
         
         {plannedTodaysVisits.length !== todaysVisits.length && (
@@ -286,9 +351,9 @@ export const TodayTab: React.FC<TodayTabProps> = ({
         <div className="rounded-xl border border-dashed p-10 text-center bg-slate-50/50">
           <MapPin className="mx-auto h-12 w-12 text-slate-300" />
           <h3 className="mt-4 text-sm font-bold text-slate-900">Agenda Vuota</h3>
-          <p className="mt-1 text-xs text-slate-500">Non ci sono visite pianificate per la giornata odierna.</p>
+          <p className="mt-1 text-xs text-slate-500">Non ci sono visite pianificate per la giornata selezionata.</p>
           <button
-            onClick={onOpenAddModal}
+            onClick={() => onOpenAddModal(selectedDate)}
             className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-blue-700 transition"
           >
             <Plus className="w-3.5 h-3.5" />

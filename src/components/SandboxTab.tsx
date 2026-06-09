@@ -174,6 +174,55 @@ export const SandboxTab: React.FC<SandboxTabProps> = ({
         </p>
       </div>
 
+      {/* GH-29. Import day from calendar to sandbox */}
+      <div className="rounded-2xl border border-blue-100 bg-blue-50/20 p-4 space-y-3 shadow-3xs">
+        <h4 className="text-xs font-extrabold uppercase tracking-wider text-blue-850 select-text flex items-center gap-1.5">
+          <Sparkles className="w-4 h-4 text-blue-500" />
+          Importa Giornata pianificata per ottimizzarla
+        </h4>
+        <p className="text-[11px] text-slate-500 leading-normal select-text">
+          Seleziona una giornata programmata nel calendario corrente per importare tutte le sue visite in Sandbox come bozze libere, in modo da riordinarle con TSP e provarne la sequenza ideale.
+        </p>
+        <div className="flex flex-wrap items-center gap-2">
+          {weekDates.map((dateStr) => {
+            const dateObj = new Date(dateStr);
+            const weekday = dateObj.toLocaleDateString("it-IT", { weekday: "short" });
+            const dayNum = dateObj.getDate();
+            const count = visits.filter(v => v.data === dateStr && v.esito !== "Cancellata/Backlog").length;
+
+            return (
+              <button
+                key={dateStr}
+                onClick={() => {
+                  if (count === 0) {
+                    alert(`Nessuna visita programmata trovata per il giorno ${getDayLabel(dateStr)} (${dateStr}).`);
+                    return;
+                  }
+                  if (window.confirm(`Spostare le ${count} visite di ${getDayLabel(dateStr)} nella Sandbox? Questo rimuoverà la loro pianificazione dal calendario per consentire i riordini di tappa.`)) {
+                    const updated = visits.map(v => {
+                      if (v.data === dateStr && v.esito !== "Cancellata/Backlog") {
+                        return { ...v, data: "", orario: "" };
+                      }
+                      return v;
+                    });
+                    onUpdateVisitsList(updated);
+                    alert(`🎉 Spostate con successo ${count} visite da ${getDayLabel(dateStr)} in Sandbox!`);
+                  }
+                }}
+                className={`text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-350 px-2.5 py-1.5 text-[11px] font-bold rounded-xl transition flex items-center gap-1.5 select-none cursor-pointer ${
+                  count === 0 ? "opacity-45 hover:bg-white cursor-not-allowed" : ""
+                }`}
+              >
+                <span className="capitalize">{weekday} {dayNum}</span>
+                <span className={`text-[9px] px-1.5 py-0.2 rounded-md font-extrabold ${count > 0 ? "bg-blue-100 text-blue-700 font-mono" : "bg-slate-100 text-slate-405 font-mono"}`}>
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       <div className="space-y-4">
         {/* Action triggers */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">

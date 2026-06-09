@@ -7,6 +7,7 @@ import * as XLSX from "xlsx";
 interface SummaryTabProps {
   visits: SalesVisit[];
   weekKey: string;
+  weekDates?: string[];
   customPrompt: string;
   onOpenDebrief: (visit: SalesVisit) => void;
 }
@@ -14,6 +15,7 @@ interface SummaryTabProps {
 export const SummaryTab: React.FC<SummaryTabProps> = ({
   visits,
   weekKey,
+  weekDates = [],
   customPrompt,
   onOpenDebrief,
 }) => {
@@ -118,7 +120,9 @@ ${v.report || v.quickNote || "Visita effettuata con successo."}`;
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div className="rounded-xl border bg-slate-50/50 p-3 text-center">
           <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Pianificate</span>
-          <span className="text-xl font-extrabold text-slate-700">{visits.length}</span>
+          <span className="text-xl font-extrabold text-slate-700">
+            {visits.filter((v) => (!weekDates.length || weekDates.includes(v.data)) && !!v.data && v.esito !== "Cancellata/Backlog").length}
+          </span>
         </div>
         <div className="rounded-xl border bg-slate-50/50 p-3 text-center">
           <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Effettuate</span>

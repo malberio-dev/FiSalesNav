@@ -11,7 +11,10 @@ Questo documento contiene gli scenari di test funzionali e i prompt pronti per i
 4. [Scenario 4: Sintesi Settimanale (Weekly Summary for Management)](#scenario-4-sintesi-settimanale-weekly-summary-for-management)
 5. [Scenario 5: Resilienza & Fallback Offline (Local Failover)](#scenario-5-resilienza--fallback-offline-local-failover)
 6. [Scenario 6: Logistica, Coordinate & TSP (Sandbox Route Optimization)](#scenario-6-logistica-coordinate--tsp-sandbox-route-optimization)
-7. [Mappatura Chiudi-Issue del Repository (Issue Closure Mapping)](#7-mappatura-chiudi-issue-del-repository-issue-closure-mapping)
+7. [Scenario 7: Navigazione & Preview Feriale (Preview Altri Giorni)](#scenario-7-navigazione--preview-feriale-preview-altri-giorni)
+8. [Scenario 8: Importazione Giornata Calendario in Sandbox](#scenario-8-importazione-giornata-calendario-in-sandbox)
+9. [Scenario 9: Drag-And-Drop da Outlook (Outlook Sync Dnd)](#scenario-9-drag-and-drop-da-outlook-outlook-sync-dnd)
+10. [Mappatura Chiudi-Issue del Repository (Issue Closure Mapping)](#10-mappatura-chiudi-issue-del-repository-issue-closure-mapping)
 
 ---
 
@@ -172,7 +175,59 @@ Assicurarsi che l'algoritmo del commesso viaggiatore (TSP - Traveling Salesman P
 
 ---
 
-## 7. Mappatura Chiudi-Issue del Repository (Issue Closure Mapping)
+## Scenario 7: Navigazione & Preview Feriale (Preview Altri Giorni)
+
+### Obiettivo
+Verificare che l'utente possa scorrere e visualizzare l'itinerario e le distanze stradali riordinate di ciascun giorno feriale della settimana selezionata, direttamente all'interno della scheda principale "Oggi", senza dover attendere il giorno stesso del calendario.
+
+### Istruzioni per il Test
+1. Accedere alla scheda **"Oggi"**.
+2. Identificare il nuovo widget **"Navigazione e Preview Giornate"** posizionato sopra il titolo del percorso.
+3. Cliccare sui vari giorni feriali dal lunedì al venerdì (es. cliccando sul martedì o sul giovedì feriale).
+
+### Risultati Attesi
+- L'intestazione dell'itinerario cambia mostrando la dicitura **"PREVIEW"** accoppiata alla data corretta scelta.
+- Se il giorno feriale è diverso dal giorno solare reale correntemente in corso, appare il tasto azzurro **"Torna a Oggi"** che consente di rientrare fluidamente nell'andamento quotidiano reale.
+- L'elenco mostra l'esatta sequenza delle visite pianificate per quel giorno, ricalcolando ed esplicitando in riga i chilometri complessivi (`🚗 X km`).
+
+---
+
+## Scenario 8: Importazione Giornata Calendario in Sandbox
+
+### Obiettivo
+Validare la facoltà di clonare/traslocare in blocco tutte le visite pianificate per un giorno della settimana all'interno del tavolo da disegno Sandbox, per studiare deviazioni, percorsi alternativi o suggerimenti di tappa senza scompaginare l'agenda ufficiale prima della conferma definitiva.
+
+### Istruzioni per il Test
+1. Creare o verificare che vi siano 3 o 4 visite inserite per una giornata della settimana (ad es. per il Mercoledì).
+2. Spostarsi nella scheda **"Sandbox"**.
+3. Sotto il testo descrittivo del modulo, localizzare la sezione **"Importa Giornata pianificata per ottimizzarla"**.
+4. Cliccare sul pulsante feriale corrispondente (es. `Mercoledì [3 visite]`).
+
+### Risultati Attesi
+- L'applicazione mostra un avviso nativo richiedendo conferma del trasferimento feriale in Sandbox.
+- Al clic su "Conferma", le visite di quella giornata vengono spostate nella Sandbox (la data viene azzerata liberando il calendario ufficiale).
+- Le visite appaiono nell'elenco descrittivo della Sandbox, sbloccando la pianificazione manuale o l'ottimizzazione automatica TSP.
+
+---
+
+## Scenario 9: Drag-And-Drop da Outlook (Outlook Sync Dnd)
+
+### Obiettivo
+Convalidare la capacità dell'agente di importare in modo nativo e interattivo gli appuntamenti formati in Microsoft Outlook sul proprio PC, attraverso il trascinamento orizzontale dei file `.ics` o della selezione testuale delle e-mail d'invito d'incontro direttamente sopra la colonna del giorno prescelto.
+
+### Istruzioni per il Test
+1. Spostarsi nella scheda **"Calendario"**.
+2. Trascinare un file di appuntamento del calendario `.ics` (o copiare un frammento di testo d'incontro come *"Visita Barilla alle ore 10:30 via Mantova Parma"*) dalla cartella del computer o dall'applicazione Outlook sopra uno dei giorni feriali (es. Giovedì).
+3. Rilasciare l'elemento trascinato quando la colonna si colora.
+
+### Risultati Attesi
+- Entrando con l'elemento trascinato sopra la colonna feriale del giorno desiderato, l'interfaccia risponde istantaneamente applicando un overlay blu lucido e l'icona con la dicitura **"Rilascia l'incontro qui!"**.
+- Al rilascio (`drop`), il file o testo viene processato localmente estraendo il titolo dell'incontro, l'ora (es. `10:30`), l'indirizzo stradale e i dettagli della riunione.
+- Viene creato in automatico un nuovo record di visita strutturato inserito all'istante nel database per la data su cui è avvenuto il rilascio.
+
+---
+
+## 10. Mappatura Chiudi-Issue del Repository (Issue Closure Mapping)
 
 Questo capitolo associa ciascun scenario di test eseguito con successo ai corrispondenti ticket (ID Issue) registrati nel **Backlog** di progetto. Al superamento di ciascun test, lo sviluppatore o il maintainer può procedere alla chiusura formale delle issue sul repository GitHub.
 
@@ -184,7 +239,11 @@ Questo capitolo associa ciascun scenario di test eseguito con successo ai corris
 | **GH-21** | **Configurazione Modello AI** | [Scenario 5](#scenario-5-resilienza--fallback-offline-local-failover) & Pannello Impostazioni | I selettori dei profili modello (*fast* e *advanced*) rispondono dinamicamente ai salvataggi nelle impostazioni e variano il payload diretto inviato al server. | **v0.3.4** |
 | **GH-22** | **Retry Chiamate AI con Exponential Backoff** | [Scenario 5](#scenario-5-resilienza--fallback-offline-local-failover) & Pannello Impostazioni | In caso di saturazione temporanea, il server effettua i tentativi impostati incrementando il ritardo, mostrando il computo dei retry nei log diagnostici. | **v0.3.4** |
 | **GH-25** | **Persistenza errori di quota API Gemini** *(Graceful Fallback)* | [Scenario 5](#scenario-5-resilienza--fallback-offline-local-failover) | Il blocco o la mancanza temporanea della chiave non arresta l'applicazione e non restituisce errori 550 o JSON non validi. L'app esegue un parser euristico o formattatore locale fluido. | **v0.3.4** |
+| **GH-26** | **Errore contatore visite nel Riepilogo** *(Contatori errati)* | [Scenario 4](#scenario-4-sintesi-settimanale-weekly-summary-for-management) | Il contatore "Pianificate" nella scheda Riepilogo computa e visualizza esclusivamente le visite pianificate collocate nel piano feriale settimanale, separandole accuratamente da bozze libere in Sandbox o cancellazioni allocate in Backlog. | **v0.4.0** |
 | **GH-27** | **Gestione modello AI da settings** | Pannello Impostazioni AI | Distinzione operativa tra il modello ultra-leggero di routine (`gemini-3.1-flash-lite`, progettato per massime quote e consumo ridotto) e il modello completo di report (`gemini-3.5-flash`). | **v0.3.4** |
+| **GH-28** | **Preview altri giorni nella scheda Oggi** | [Scenario 7](#scenario-7-navigazione--preview-feriale-preview-altri-giorni) | La scheda "Oggi" presenta un radiocomando con i 5 giorni feriali della settimana corrente. Cambiando la selezione, l'itinerario e le relative tratte si modificano per mostrare la giornata scelta in anteprima reale senza dover attendere il giorno in corso. | **v0.4.0** |
+| **GH-29** | **Importazione calendario da sandbox** | [Scenario 8](#scenario-8-importazione-giornata-calendario-in-sandbox) | La tab Sandbox fornisce un modulo integrato che conta in tempo reale le visite schedulate in ogni giorno feriale. Un clic consente di "traslocare" quelle visite in Sandbox azzerando la data del calendario, consentendo simulazioni di riordino. | **v0.4.0** |
+| **GH-30** | **Importazione da Dnd Outlook** | [Scenario 9](#scenario-9-drag-and-drop-da-outlook-outlook-sync-dnd) | Ciascun pannello giornaliero della tab "Calendario" risponde agli eventi drag-and-drop (trascinamento file `.ics` o testo d'appunto) evidenziando visivamente la dropzone e importando l'appuntamento come visita pianificata. | **v0.4.0** |
 | **GH-31** | **Miglioramento pianificatori & Badge** | Tutti gli scenari (1-4) | Apparizione dei badge diagnostici di telemetria (Azzurro per AI certificata con token/modello; Ambra per Fallback Offline) in tutti i moduli di inserimento ed esito. | **v0.3.4** |
 
 ### Istruzioni per la Chiusura delle Issue sul Repository

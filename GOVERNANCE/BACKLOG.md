@@ -8,10 +8,6 @@
 | **GH-20**  | User request | `enhancement`, `feature request`, `AI-idea` | 2026-06-08 | **Autenticazione Utente**: Protezione dell'accesso all'agenda inserendo un'autenticazione tramite token JWT e login Google OAuth per installazioni su URL pubblico. | Nessuna | Medio | **Pianificato** | v0.6.0 |
 | **GH-23**  | Technical Debt | `wontfix`, `AI-idea` | 2026-06-08 | **Garante Servizio Routing**: Nominatim e OSRM pubblici sono gratuiti senza SLA né rate limit garantiti. Valutare Google Maps Routes API o self-hosting per uso intensivo. | Nessuna | Medio-Alto | **Inserita nel Backlog** | - |
 | **GH-24**  | Bug noto | `bug` | 2026-06-08 | **Gestione errore JSON sintesi settimanale**: Impedire crash o messaggi di parsing non validi (`unexpected token <`) gestendo appropriatamente le eccezioni e i feedback utente in caso di errori API. | Nessuna | Basso | **Pianificato** | v0.5.0 |
-| **GH-26**  | Bug noto | `bug` | 2026-06-09 | **Errore contatore visite**: Risoluzione errore visivo del contatore che segna erroneamente 4 visite programmate anziché 3 quando visibili. | Nessuna | Basso | **Pianificato** | v0.4.0 |
-| **GH-28**  | User request | `enhancement`, `feature request` | 2026-06-09 | **Preview altri giorni**: Tasto nella tab "oggi" per consentire la navigazione e preview di giornate diverse del calendario in corso. | Nessuna | Basso | **Pianificato** | v0.4.1 |
-| **GH-29**  | User request | `enhancement`, `feature request` | 2026-06-09 | **Importazione calendario da sandbox**: Abilitare l'import di un giorno pre-definito dal calendario all'interno del modulo sandbox, per poter suggerire e testare i riordini di tappa. | Nessuna | Medio | **Pianificato** | v0.5.0 |
-| **GH-30**  | User request | `enhancement`, `feature request` | 2026-06-09 | **Importazione da drag-drop calendario**: Permettere l'importazione diretta giornaliera/settimanale mediante trascinamento di appuntamenti dal calendario Outlook. | Nessuna | Medio | **Pianificato** | v0.5.1 |
 
 ---
 
@@ -19,6 +15,10 @@
 
 | ID | Categoria | Tag GitHub | Data Inserimento | Descrizione | Dipendenze | Effort | Data Chiusura | Versione |
 |---|---|---|---|---|---|---|---|---|
+| **GH-26**  | Bug noto | `bug` | 2026-06-09 | **Errore contatore visite**: Risoluzione errore visivo del contatore che segna erroneamente 4 visite programmate anziché 3 quando visibili. | Nessuna | Basso | 2026-06-09 | v0.4.0 |
+| **GH-28**  | User request | `enhancement`, `feature request` | 2026-06-09 | **Preview altri giorni**: Tasto nella tab "oggi" per consentire la navigazione e preview di giornate diverse del calendario in corso. | Nessuna | Basso | 2026-06-09 | v0.4.0 |
+| **GH-29**  | User request | `enhancement`, `feature request` | 2026-06-09 | **Importazione calendario da sandbox**: Abilitare l'import di un giorno pre-definito dal calendario all'interno del modulo sandbox, per poter suggerire e testare i riordini di tappa. | Nessuna | Medio | 2026-06-09 | v0.4.0 |
+| **GH-30**  | User request | `enhancement`, `feature request` | 2026-06-09 | **Importazione da drag-drop calendario**: Permettere l'importazione diretta giornaliera/settimanale mediante trascinamento di appuntamenti dal calendario Outlook. | Nessuna | Medio | 2026-06-09 | v0.4.0 |
 | **GH-18**  | User request | `enhancement` | 2026-06-08 | **AI non cerca indirizzo completo durante parse**: Con un appunto sintetico come *"visita mercoledì da ratti guanzate"*, l'AI ricerca l'azienda e l'indirizzo stradale esatto in tempo reale tramite Google Search Grounding configurabile da pannello Settings. | Nessuna | Medio | 2026-06-09 | v0.3.4 |
 | **GH-25**  | Quota AI | `bug` | 2026-06-09 | **Persistenza errori di quota API Gemini**: Mitigazione robusta di rate limit temporanei / 429 sul server. Implementata coda asincrona con retry configurabili, exponential backoff flessibile e failover locale automatico in caso di interruzione. | Nessuna | Medio-Alto | 2026-06-09 | v0.3.4 |
 | **GH-21**  | User request | `enhancement`, `feature request`, `AI-idea` | 2026-06-08 | **Configurazione Modello AI**: Superamento dell'hardcoding lato server permettendo di scegliere ed impostare le costanti per modelli lenti, avanzati, di fallback e contatore di token. | Nessuna | Basso | 2026-06-09 | v0.3.4 |

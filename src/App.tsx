@@ -287,10 +287,11 @@ export default function App() {
             <TodayTab
               visits={visits}
               settings={settings}
+              weekDates={weekDates}
               onUpdateVisit={handleUpdateVisit}
               onDeleteVisit={handleDeleteVisit}
               onOpenDebrief={(v) => setDebriefVisit(v)}
-              onOpenAddModal={() => openAddModalForDate(new Date().toISOString().slice(0, 10))}
+              onOpenAddModal={(date) => openAddModalForDate(date || new Date().toISOString().slice(0, 10))}
             />
           )}
 
@@ -305,6 +306,7 @@ export default function App() {
               onOpenImportModal={() => setIsImportOpen(true)}
               onOpenDebrief={(v) => setDebriefVisit(v)}
               onDeleteVisit={handleDeleteVisit}
+              onAddVisit={handleAddVisit}
               startLocation={settings.startLocation}
             />
           )}
@@ -313,6 +315,7 @@ export default function App() {
             <SummaryTab
               visits={visits}
               weekKey={weekKey}
+              weekDates={weekDates}
               customPrompt={settings.summaryPrompt}
               onOpenDebrief={(v) => setDebriefVisit(v)}
             />
