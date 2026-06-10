@@ -133,23 +133,8 @@ export const TodayTab: React.FC<TodayTabProps> = ({
     .filter((v) => v.data === selectedDate && v.esito !== "Cancellata/Backlog")
     .sort((a, b) => a.orario.localeCompare(b.orario));
 
-  // Filtered stops shown in UI (search & outcome tags filter)
-  const todaysVisits = plannedTodaysVisits.filter((v) => {
-    const term = searchQuery.toLowerCase().trim();
-    const matchesSearch = 
-      !term ||
-      v.azienda.toLowerCase().includes(term) ||
-      (v.indirizzo || "").toLowerCase().includes(term) ||
-      (v.notePreVisita || "").toLowerCase().includes(term);
-
-    const matchesFilter =
-      filterEsito === "Tutti" ||
-      (filterEsito === "Completati" && !!v.esito) ||
-      (filterEsito === "Da Svolgere" && !v.esito) ||
-      v.esito === filterEsito;
-
-    return matchesSearch && matchesFilter;
-  });
+  // Filtered stops shown in UI (Strictly simplified for GH-40 to focus on standard timeline sequence)
+  const todaysVisits = plannedTodaysVisits;
 
   // Optimize today's route (GitHub Issue #102)
   const handleOptimizeRoute = async () => {
@@ -396,36 +381,7 @@ export const TodayTab: React.FC<TodayTabProps> = ({
         )}
       </div>
 
-      {/* Search and Filter panel (GitHub Issue #108) */}
-      <div className="flex flex-col sm:flex-row gap-2.5 items-center bg-slate-50/70 border border-slate-200 p-3 rounded-xl">
-        <div className="relative w-full sm:flex-1">
-          <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Filtra per cliente, indirizzo o note commerciali..."
-            className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs text-slate-800 focus:outline-hidden focus:border-blue-500"
-          />
-        </div>
-        
-        <div className="flex items-center gap-1 w-full sm:w-auto flex-wrap sm:flex-nowrap">
-          <span className="text-[10px] font-bold text-slate-400 uppercase mr-1 hidden sm:inline select-none">Stato:</span>
-          {["Tutti", "Da Svolgere", "Completati"].map((opt) => (
-            <button
-              key={opt}
-              onClick={() => setFilterEsito(opt)}
-              className={`text-[10.5px] font-bold px-2.5 py-1.5 rounded-lg border transition cursor-pointer select-none ${
-                filterEsito === opt
-                  ? "bg-blue-600 text-white border-blue-600 shadow-xs"
-                  : "bg-white text-slate-500 hover:text-slate-850 hover:border-slate-350 border-slate-200"
-              }`}
-            >
-              {opt}
-            </button>
-          ))}
-        </div>
-      </div>
+      {/* Travel filtering panel removed per GH-40 to declutter and focus on sequential timeline */}
 
       {todaysVisits.length === 0 ? (
         <div className="rounded-xl border border-dashed p-10 text-center bg-slate-50/50">
@@ -497,29 +453,44 @@ export const TodayTab: React.FC<TodayTabProps> = ({
                     className={`flex h-5 w-5 items-center justify-center rounded-full border z-10 -ml-[5.5px] transition-colors focus:outline-hidden ${
                       isCompleted 
                         ? "bg-emerald-500 border-emerald-600 text-white" 
+                        : visit.visitType === "logistic"
+                        ? "bg-slate-700 border-slate-800 text-white hover:bg-slate-850"
                         : "bg-white border-blue-500 text-blue-600 hover:bg-blue-50"
                     }`}
                   >
                     {isCompleted ? (
                       <CheckCircle className="w-3.5 h-3.5 stroke-[2.5]" />
+                    ) : visit.visitType === "logistic" ? (
+                      <span className="h-2 w-2 rounded-full bg-slate-200" />
                     ) : (
                       <span className="h-2 w-2 rounded-full bg-blue-600" />
                     )}
                   </button>
 
                   {/* Accordion Card */}
-                  <div className="flex-1 rounded-xl border bg-white shadow-xs overflow-hidden transition-all hover:border-slate-300">
+                  <div className={`flex-1 rounded-xl border overflow-hidden transition-all hover:border-slate-300 shadow-xs ${
+                    visit.visitType === "logistic" 
+                      ? "border-slate-200 bg-slate-50/90 text-slate-700" 
+                      : "bg-white border-slate-200"
+                  }`}>
                     
                     {/* Header trigger */}
                     <div
                       onClick={() => handleToggleExpand(visit.id)}
-                      className="p-4 cursor-pointer flex items-center justify-between gap-3 bg-white"
+                      className={`p-4 cursor-pointer flex items-center justify-between gap-3 ${
+                        visit.visitType === "logistic" ? "bg-slate-100/30" : "bg-white"
+                      }`}
                     >
                       <div className="min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-xs font-mono font-bold text-slate-800 bg-slate-100 px-1.5 py-0.5 rounded">
                             {visit.orario}
                           </span>
+                          {visit.visitType === "logistic" && (
+                            <span className="text-[9px] bg-slate-700 text-white border border-slate-800 font-extrabold px-1.5 py-0.2 rounded tracking-widest uppercase">
+                              LOGISTICA
+                            </span>
+                          )}
                           {visit.isDemo && (
                             <span className="text-[9px] bg-blue-50 text-blue-600 border border-blue-100 font-bold px-1.5 py-0.2 rounded">
                               DEMO

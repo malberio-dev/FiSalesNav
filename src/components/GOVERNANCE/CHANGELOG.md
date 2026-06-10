@@ -4,6 +4,22 @@ Tutte le modifiche e gli aggiornamenti di versione apportati a **FiSalesNav**.
 
 ---
 
+## [v0.3.7] - 2026-06-10
+
+### Aggiunto
+- **Tappe Logistiche / Checkpoints Ad-Hoc (GH-39)**: Possibilità di inserire direttamente in timeline tappe logistiche non commerciali (Hotel, Casa, Ufficio, Pranzo) per modellare con flessibilità l'intera giornata di lavoro.
+- **Scorciatoie Predefinite**: Inseriti pulsanti rapidi nel pannello di aggiunta visita manuale per pre-compilare all'istante le denominazioni delle tappe logistiche.
+- **Stilizzazione Differenziata**: Le tappe logistiche fittizie sono disegnate con un colore grigio/ardesia high-contrast e badge "LOGISTICA" dedicato per separarle chiaramente dalle visite d'affari.
+
+### Modificato / Ottimizzato
+- **Rimozione Input Itinerario Ridondanti (GH-39)**: Eliminati i sottomoduli duplicati e verbosi delle impostazioni di viaggio in SettingsModal anziché confinarli lì, centralizzando l'interattività dell'agenda.
+- **Rimozione Ricerca e Filtri in Oggi (GH-40)**: Pulizia integrale della casella di ricerca testuale e dei tag "Stato" dalla scheda "Oggi" per sgomberare l'interfaccia da carichi cognitivi superflui e focalizzarsi interamente sulla sequenza cronologica stradale.
+
+### Corretto
+- **Ripristino Memoria Importazione (GH-32)**: Corretto il comportamento del pannello d'importazione massiva che ora sbianca e pulisce l'area di testo e i precedenti stati intermedi non appena la lista degli appuntamenti viene importata con successo.
+
+---
+
 ## [v0.3.6] - 2026-06-10
 
 ### Aggiunto

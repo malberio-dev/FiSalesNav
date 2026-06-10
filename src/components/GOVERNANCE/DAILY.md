@@ -4,6 +4,24 @@ Diario di bordo e memoria storica delle decisioni e degli avanzamenti del proget
 
 ---
 
+## Sessione del 2026-06-10 (Sera) - Tappe Logistiche Ad-Hoc, Rimozione Search/Filtri Oggi e Ripristino Memoria Importazione (v0.3.7)
+
+### Panoramica della Sessione
+In questa sessione abbiamo raffinato ulteriormente l'Area di lavoro 3 (UX/UI & Usabilità per operazioni quotidiane) focalizzandoci sul backlog attivo deliberato dall'utente. Abbiamo completato gli open point strategici legati a **GH-32**, **GH-40** e **GH-39**, introducendo una flessibilità totale nella schedulazione dell'agenda per gli agenti stradali, riducendo al minimo il sovraccarico cognitivo visivo nell'itinerario e correggendo le resistenze residue della memoria del parser. Tutti i test compilano perfettamente e la versione ufficiale è avanzata a **v0.3.7**.
+
+### Decisioni Rilevanti e Avanzamenti Sviluppo
+1. **Tappe Logistiche / Checkpoints Ad-Hoc in Timeline (GH-39)**:
+   - *Contesto*: Le impostazioni fisse di viaggio in Settings costringevano l'itinerario giornaliero ad una rigida partenza/ritorno predeterminata, non riflettendo le deviazioni dinamiche degli agenti (es. dormire in un hotel diverso la sera, fare deviazioni in ufficio o sosta pranzo).
+   - *Decisione*: Eliminati i moduli e campi verbosi/ridondanti delle impostazioni di viaggio da `SettingsModal.tsx`. Al loro posto, abilitato il supporto integrato a "Tappe Logistiche" aggiungibili al volo tramite `AddVisitModal`: un innovativo tipo di tappa ("visitType: logistic") che permette di registrare checkpoint arbitrari (hotel, rientro casa, ufficio, sosta pranzo) con scorciatoie di compilazione rapida incorporate. Le tappe fittizie sono formattate con uno stile grigio/ardesia high-contrast e badge "LOGISTICA" per staccarle dalle visite ai clienti commerciali.
+2. **Semplificazione dell'Interfaccia Oggi / Timeline (GH-40)**:
+   - *Contesto*: I sottomoduli di ricerca rapida testuale e i filtri di stato in Oggi/Timeline ingombravano la fascia alta dello schermo riducendo la visibilità della sequenza logistica di viaggio.
+   - *Decisione*: Rimossa completamente la barra di ricerca rapida e il filtro Stato del timeline in `TodayTab.tsx`, concentrando tutto lo spazio visuale a disposizione sulle tappe cronologiche e le distanze stimate via OSRM.
+3. **Pianificazione Sottrazione Stato Import (GH-32)**:
+   - *Contesto*: Nel riesaminare la procedura di importazione massiva di visite, l'ultimo testo incollato veniva trattenuto in memoria tra le aperture del modale.
+   - *Decisione*: Aggiornato l'handler di conferma importazione in `ImportVisitsModal.tsx` per forzare l'inizializzazione del testo di input a stringa vuota, azzerando le bozze in preview e resettando lo step modale per l'importazione successiva.
+
+---
+
 ## Sessione del 2026-06-10 (Pomeriggio) - Validazione Indirizzi, Modifica In-Card, Navigazione Calendario 8w e ICS Multi-evento (v0.3.6)
 
 ### Panoramica della Sessione

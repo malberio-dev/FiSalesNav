@@ -76,6 +76,9 @@ export const ImportVisitsModal: React.FC<ImportVisitsModalProps> = ({
     });
 
     onImport(visitsToImport);
+    setInputText("");
+    setPreviewVisits([]);
+    setStep("input");
     onClose();
   };
 

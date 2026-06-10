@@ -12,6 +12,7 @@ export interface SalesVisit {
   nextStep: string;
   report: string;
   isDemo?: boolean;
+  visitType?: "standard" | "logistic";
 }
 
 export interface AppSettings {

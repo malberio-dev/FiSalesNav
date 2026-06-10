@@ -32,6 +32,7 @@ export const AddVisitModal: React.FC<AddVisitModalProps> = ({
   const [orario, setOrario] = useState(defaultTime);
   const [notePreVisita, setNotePreVisita] = useState("");
   const [quickNote, setQuickNote] = useState("");
+  const [visitType, setVisitType] = useState<"standard" | "logistic">("standard");
 
   const [isValidatingAddress, setIsValidatingAddress] = useState(false);
   const [addressValidationStatus, setAddressValidationStatus] = useState<{valid: boolean; coords: [number, number]} | null>(null);
@@ -113,6 +114,7 @@ export const AddVisitModal: React.FC<AddVisitModalProps> = ({
       offerta: "",
       nextStep: "",
       report: "",
+      visitType,
     };
 
     onAdd(newVisit);
@@ -235,6 +237,66 @@ export const AddVisitModal: React.FC<AddVisitModalProps> = ({
                 </div>
               )}
 
+              {/* Type selector (GH-39) */}
+              <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/60">
+                <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-2">
+                  Tipo di Tappa
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setVisitType("standard");
+                    }}
+                    className={`px-3 py-2 rounded-lg text-xs font-bold border transition cursor-pointer ${
+                      visitType === "standard"
+                        ? "bg-blue-600 text-white border-blue-600 shadow-sm"
+                        : "bg-white text-slate-600 hover:text-slate-800 border-slate-200"
+                    }`}
+                  >
+                    💼 Visita Commerciale
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setVisitType("logistic");
+                    }}
+                    className={`px-3 py-2 rounded-lg text-xs font-bold border transition cursor-pointer ${
+                      visitType === "logistic"
+                        ? "bg-slate-700 text-white border-slate-700 shadow-sm"
+                        : "bg-white text-slate-600 hover:text-slate-800 border-slate-200"
+                    }`}
+                  >
+                    🚗 Tappa Logistica / Checkpoint
+                  </button>
+                </div>
+
+                {visitType === "logistic" && (
+                  <div className="mt-3">
+                    <span className="block text-[10px] font-extrabold uppercase tracking-widest text-slate-400 mb-1.5">
+                      Scorciatoie Predefinite:
+                    </span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {[
+                        { label: "🏨 Partenza Hotel", val: "Partenza Hotel" },
+                        { label: "🏠 Rientro a Casa", val: "Rientro a Casa" },
+                        { label: "🏢 Sede / Ufficio", val: "Sede / Ufficio" },
+                        { label: "🥪 Sosta Pranzo", val: "Sosta Pranzo" },
+                      ].map((item) => (
+                        <button
+                          key={item.label}
+                          type="button"
+                          onClick={() => setAzienda(item.val)}
+                          className="px-2 py-1 rounded bg-white hover:bg-slate-100 border border-slate-200 text-[10.5px] font-medium text-slate-700 transition cursor-pointer"
+                        >
+                          {item.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
                   Ragione Sociale Azienda *
@@ -244,7 +306,7 @@ export const AddVisitModal: React.FC<AddVisitModalProps> = ({
                   required
                   value={azienda}
                   onChange={(e) => setAzienda(e.target.value)}
-                  placeholder="E.g. Tetra Pak SpA"
+                  placeholder={visitType === "logistic" ? "E.g. Partenza Hotel" : "E.g. Tetra Pak SpA"}
                   className="w-full rounded-lg border border-slate-200 px-3.5 py-2 text-sm text-slate-800 focus:outline-hidden focus:border-blue-500"
                 />
               </div>
