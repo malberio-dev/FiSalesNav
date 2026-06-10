@@ -37,7 +37,7 @@ const PRE_VISIT_NOTES_TEMPLATES = [
   "Presentazione delle teste di lettura RFID UHF flessibili per tracciabilità pallet lungo la linea di montaggio.",
 ];
 
-const TIMES = ["09:00", "10:30", "14:00", "15:30", "17:00"];
+const TIMES = ["08:30", "10:30", "13:30", "15:15", "17:00"];
 
 export function generateDemoVisits(weekKey: string, weekDates: string[]): SalesVisit[] {
   const result: SalesVisit[] = [];

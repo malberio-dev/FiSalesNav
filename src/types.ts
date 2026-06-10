@@ -29,6 +29,7 @@ export interface AppSettings {
   apiRetries?: number;
   initialDelay?: number;
   enableSearchGrounding?: boolean;
+  simulateWrongAddresses?: boolean;
 }
 
 export interface WeekData {

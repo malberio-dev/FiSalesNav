@@ -36,6 +36,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [apiRetries, setApiRetries] = useState(settings.apiRetries ?? 3);
   const [initialDelay, setInitialDelay] = useState(settings.initialDelay ?? 1500);
   const [enableSearchGrounding, setEnableSearchGrounding] = useState(!!settings.enableSearchGrounding);
+  const [simulateWrongAddresses, setSimulateWrongAddresses] = useState(!!settings.simulateWrongAddresses);
 
   const [aiStats, setAiStats] = useState<AIStats>(getAIStats());
   const [activeTab, setActiveTab] = useState<"profile" | "prompts" | "ai" | "demo">("profile");
@@ -58,6 +59,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       apiRetries,
       initialDelay,
       enableSearchGrounding,
+      simulateWrongAddresses,
     });
     onClose();
   };
@@ -365,6 +367,19 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     type="checkbox"
                     checked={enableSearchGrounding}
                     onChange={(e) => setEnableSearchGrounding(e.target.checked)}
+                    className="w-4.5 h-4.5 text-blue-600 border-slate-300 rounded focus:ring-blue-500 accent-blue-600 focus:outline-hidden cursor-pointer"
+                  />
+                </div>
+
+                <div className="mt-2.5 border-t pt-2.5 flex items-center justify-between">
+                  <div className="pr-4">
+                    <label className="text-xs font-bold text-slate-705 block">Simula Indirizzi Errati (Debug)</label>
+                    <p className="text-[10px] text-slate-400">Simula errori o anomalie di geolocalizzazione per testare la resilienza dell'app nei calcoli feriali.</p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={simulateWrongAddresses}
+                    onChange={(e) => setSimulateWrongAddresses(e.target.checked)}
                     className="w-4.5 h-4.5 text-blue-600 border-slate-300 rounded focus:ring-blue-500 accent-blue-600 focus:outline-hidden cursor-pointer"
                   />
                 </div>

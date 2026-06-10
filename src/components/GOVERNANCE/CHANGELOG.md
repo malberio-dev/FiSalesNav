@@ -4,6 +4,38 @@ Tutte le modifiche e gli aggiornamenti di versione apportati a **FiSalesNav**.
 
 ---
 
+## [v0.3.6] - 2026-06-10
+
+### Aggiunto
+- **Validazione Indirizzo nel Form & In-Card (GH-36)**: Aggiunta la verifica integrata dell'indirizzo in tempo reale ("Verifica Indirizzo") sia nel modal di inserimento appuntamenti che nella card di modifica in-place. Restituisce le coordinate precise o notifica l'uso del fallback.
+- **Modifica Appuntamenti In-Card (GH-42)**: Possibilità di correggere al volo azienda, indirizzo, data, orario d'agenda e note pre-visita premendo l'icona Matita/Edit direttamente sulla card nella schermata Oggi/Timeline senza dover eliminare l'evento.
+- **Navigazione Calendario fino a 8 Settimane (GH-44)**: Rimozione del limite restrittivo di risonanza feriale ed estensione ad un buffer flessibile di 8 settimane anteriori e posteriori per pianificare l'agenda.
+- **Indicatore Mese nel Calendario e Navigatore (GH-43)**: Visualizzazione dinamica del mese/anno in base alla settimana visualizzata sia sul titolo del blocco di anteprime in Oggi che nelle card del Calendario.
+- **Miglioramento Parser Outlook ICS (GH-45)**: Il modulo drag-and-drop supporta ora righe multiriga (unfolding nativo) e l'importazione massiva di VEVENT multipli da un singolo file per impegni accorpati.
+
+### Modificato / Ottimizzato
+- **Semplificazione Punto di Partenza/Ritorno (GH-39)**: Unificazione dei punti di partenza o ritorno a casa basati sulle preferenze di indirizzo registrate in Settings, con calcolo coerente dei leg stradali.
+- **Diagnostica e Telemetria Token in Tempo Reale (GH-38)**: Sistemati i metodi asincroni in `src/utils/ai.ts` per allineare cumulative e stime di costo nel SettingsModal al consumo effettivo a ogni chiamata dell'utente.
+- **Opzione Simulazione Indirizzi Errati (GH-35)**: Aggiunto sotto Settings un elemento checkbox per simulare anomalie di geocodifica (debug) in modo da forzare e testare il comportamento resiliente e trasparente di fallback.
+- **Raffinamento Filtri Oggi (GH-40)**: Pulizia e restyling visivo minimale della barra di ricerca rapida testuale e del filtro per Esito.
+- **Formato Debriefing Semplificato (GH-41)**: Semplificazione dell'input di debriefing rapido post-visita con box a testo libero, relegando alla computazione AI la classificazione formale.
+- **Documentazione Badge Offline-First (GH-37)**: Integrazione di un hover tooltip dettagliato sul badge del database nel Header che spiega la persistenza locale e il momentaneo stato di sincronizzazione.
+- **Dati Demo Allineati (GH-46)**: Nuovi scaglionamenti orari sequenziali logistici e popolamento di visite completate d'esempio nei dati generati.
+
+---
+
+## [v0.3.5] - 2026-06-10
+
+### Aggiunto / Modificato
+- **Navigazione & Preview Feriale (GH-28)**: Aggiunta la possibilità di navigare e visualizzare in anteprima l'itinerario e le tratte di altre giornate della settimana corrente direttamente dalla scheda "Oggi" senza aspettare il giorno in corso.
+- **Importazione in Sandbox (GH-29)**: Integrato un comodo box di importazione e trasloco delle visite del calendario feriale all'interno del modulo Sandbox per testing di sequenze e riordino di percorsi.
+- **Supporto Drag-and-Drop Outlook (.ics / testo) (GH-30)**: Abilitati i trigger drag-over e drop sulle colonne giornaliere del Calendario per supportare l'inserimento istantaneo di impegni tramite file `.ics` o selezioni testuali.
+
+### Corretto
+- **Fix Contatore Visite nel Riepilogo (GH-26)**: Corretto l'algoritmo di conteggio delle visite pianificate nella scheda "Riepilogo" escludendo e separando in modo preciso le tappe in Sandbox o allocate in Backlog.
+
+---
+
 ## [v0.3.4] - 2026-06-09
 
 ### Aggiunto / Ottimizzato

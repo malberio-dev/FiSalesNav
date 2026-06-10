@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { X, Sparkles, Loader2, Plus, AlertCircle } from "lucide-react";
+import { X, Sparkles, Loader2, Plus, AlertCircle, Check } from "lucide-react";
 import { SalesVisit } from "../types";
 import { fetchSingleVisitParse, AIResponseEnvelope } from "../utils/ai";
+import { geocodeAddress } from "../utils/geo";
 
 interface AddVisitModalProps {
   isOpen: boolean;
@@ -32,7 +33,36 @@ export const AddVisitModal: React.FC<AddVisitModalProps> = ({
   const [notePreVisita, setNotePreVisita] = useState("");
   const [quickNote, setQuickNote] = useState("");
 
+  const [isValidatingAddress, setIsValidatingAddress] = useState(false);
+  const [addressValidationStatus, setAddressValidationStatus] = useState<{valid: boolean; coords: [number, number]} | null>(null);
+
   if (!isOpen) return null;
+
+  const handleVerifyAddress = async () => {
+    if (!indirizzo.trim()) return;
+    setIsValidatingAddress(true);
+    setAddressValidationStatus(null);
+    try {
+      const coords = await geocodeAddress(indirizzo);
+      if (coords) {
+        const savedSettings = localStorage.getItem("fsn:settings");
+        const simulateWrong = savedSettings ? JSON.parse(savedSettings).simulateWrongAddresses : false;
+
+        if (simulateWrong) {
+          // Force simulated error
+          setAddressValidationStatus({ valid: false, coords: [0, 0] });
+        } else {
+          setAddressValidationStatus({ valid: true, coords });
+        }
+      } else {
+        setAddressValidationStatus({ valid: false, coords: [0, 0] });
+      }
+    } catch (e) {
+      setAddressValidationStatus({ valid: false, coords: [0, 0] });
+    } finally {
+      setIsValidatingAddress(false);
+    }
+  };
 
   const handleAiParse = async () => {
     if (!freeText.trim()) return;
@@ -220,16 +250,44 @@ export const AddVisitModal: React.FC<AddVisitModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
-                  Indirizzo (Via, Cap, Città, Prov)
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5 flex items-center justify-between">
+                  <span>Indirizzo (Via, Cap, Città, Prov)</span>
+                  <button
+                    type="button"
+                    onClick={handleVerifyAddress}
+                    disabled={isValidatingAddress || !indirizzo.trim()}
+                    className="text-[10px] font-bold text-blue-600 hover:text-blue-700 disabled:opacity-40"
+                  >
+                    {isValidatingAddress ? "Verifica in corso..." : "Verifica Indirizzo"}
+                  </button>
                 </label>
                 <input
                   type="text"
                   value={indirizzo}
-                  onChange={(e) => setIndirizzo(e.target.value)}
+                  onChange={(e) => {
+                    setIndirizzo(e.target.value);
+                    setAddressValidationStatus(null);
+                  }}
                   placeholder="E.g. Via Dell'Artigianato 10, Modena"
                   className="w-full rounded-lg border border-slate-200 px-3.5 py-2 text-sm text-slate-800 focus:outline-hidden focus:border-blue-500"
                 />
+                {addressValidationStatus && (
+                  <div className={`mt-1.5 text-[10.5px] font-semibold flex items-center gap-1 ${
+                    addressValidationStatus.valid ? "text-emerald-600" : "text-amber-500"
+                  }`}>
+                    {addressValidationStatus.valid ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                        Indirizzo Geolocalizzato: {addressValidationStatus.coords[0].toFixed(4)}°, {addressValidationStatus.coords[1].toFixed(4)}°
+                      </>
+                    ) : (
+                      <>
+                        <AlertCircle className="w-3.5 h-3.5 stroke-[2.5]" />
+                        Adesione Simulata o Errore: Indirizzo non tracciabile. Utilizzerà i km feriali generici standard di ripiego.
+                      </>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

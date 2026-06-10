@@ -4,6 +4,53 @@ Diario di bordo e memoria storica delle decisioni e degli avanzamenti del proget
 
 ---
 
+## Sessione del 2026-06-10 (Pomeriggio) - Validazione Indirizzi, Modifica In-Card, Navigazione Calendario 8w e ICS Multi-evento (v0.3.6)
+
+### Panoramica della Sessione
+In questa intensiva sessione abbiamo implementato con successo l'intera serie di 12 issue critiche provenienti dal backlog della repository (da **GH-35** a **GH-46**). L'agenda dell'agente è stata notevolmente evoluta, garantendo un'operatività robusta, feedback diagnostici in tempo reale ed estensione d'agenda senza frizioni. Tutti i test sono building perfectly green sul client, e la versione è stata ufficializzata a **v0.3.6**.
+
+### Decisioni Rilevanti e Avanzamenti Sviluppo
+1. **Validazione Indirizzo nel form & Modifica In-Card (GH-36 / GH-42)**:
+   - *Contesto*: Gli agenti desideravano poter validare preventivamente un indirizzo per controllare che le coordinate geografiche fossero tracciabili, e modificare gli appuntamenti direttamente sulle card della timeline senza doverli ricreare da capo.
+   - *Decisione*: Integrato un pulsante interattivo "Verifica Indirizzo" sia in `AddVisitModal` che sul widget di modifica rapida. Cliccando l'icona Edit (Matita) presente in-card sulla timeline di Oggi, l'app passa in visualizzazione edit-state interna permettendo di correggere all'istante Ragione Sociale, Indirizzo (con validazione annessa), orari e note pre-visita.
+2. **Estensione Navigazione d'Agenda 8 Settimane (GH-44 / GH-43 / GH-46)**:
+   - *Contesto*: La navigazione del calendario era arbitrariamente bloccata a 4 settimane nel passato e futuro, scontrandosi con le esigenze di pianificazione commerciale su cicli trimestrali.
+   - *Decisione*: Rimosso il limite fisso estendendo la navigazione ad un buffer flessibile di 8 settimane anteriori e posteriori in `App.tsx`. Equipaggiata l'agenda con un indicatore testuale dinamico di Mese/Anno di navigazione (es. "Navigazione e Preview Giornate (Giugno 2026)") sia in Oggi/Timeline che nel Calendario. I dati demo di agenda sono stati scaglionati con coordinate TIMES sequenziali e visite concluse per agevolare i test.
+3. **Miglioramento Parser Outlook ICS (GH-45)**:
+   - *Contesto*: Il parser trascinamento mostrava fragilità con file ICS contenenti righe multiline (folding) ed eventi multipli accorpati.
+   - *Decisione*: Dotato il parser in `CalendarTab.tsx` di un algoritmo di unfolding nativo (rallineamento righe rientrate con spazi/tab) e gestione di nodi `VEVENT` multipli ricorsivi nello stesso file per l'importazione simultanea massiva.
+4. **Resilienza Simulata di Debug & Telemetrie Token (GH-35 / GH-38 / GH-37 / GH-39 / GH-40 / GH-41)**:
+   - *Decisione*: 
+     - Aggiunto un checkbox sotto Settings "Simula Indirizzi Errati (Debug)" per forzare fallimenti di geolocalizzazione ed osservare il comportamento resiliente dell'algoritmo km feriali di ripiego.
+     - Allineate le funzioni asincrone in `src/utils/ai.ts` per far convergere, in tempo reale, i flussi della telemetria token cumulati esposti nell'Header e nel SettingsModal.
+     - Semplificato l'input del debriefing su formato a testo libero (quickNote/follow-up) e dotate le barre di ricerca e filtri Oggi di un design minimale raffinato.
+     - Documentato il funzionamento del database tramite tooltip hover sul badge di stato nel Header.
+5. **Incidente di Discrepanza ID & Sincronizzazione Issue Remoto (Miglioramento Continuo)**:
+   - *Contesto*: Con la rapida transizione dall'Idea Pool al Backlog attivo delle feature operative, si è registrato un momentaneo "ID Drift" (sfasamento e duplicazione transitoria di alcuni ID locali nei log rispetto alle issue speculari di GitHub, in particolare nella fascia `GH-20` / `GH-24`).
+   - *Causa Radice*: L'approccio incrementale ed ultrarapido focalizzato sulla delivery client-side immediata, privo di un meccanismo strutturato di quarantena o di un namespace alternativo per le linee di sviluppo locali non ancora corrispondenti biunivocamente alle issue remote di GitHub.
+   - *Giustificazione in Ottica di Miglioramento Continuo*: Questo incidente è stato colto come una preziosa opportunità di evoluzione del nostro ecosistema di governance. Lungi dall'essere un semplice errore burocratico, ha svelato la necessità di una disciplina di versionamento e tracciamento più rigorosa. La retrospettiva sull'incidente ha guidato direttamente la nascita di un protocollo maturo di mitigazione del drifting, formalizzato nel documento parallelo `DEV_PROCESS_PROPOSAL.md`. L'introduzione di tre namespace rigidi (`GH-` per issue reali, `KK-` per archivio collisioni storiche locali, `IP-` per pool idee) e di cerimonie dual-check di Pre-Flight e Post-Flight garantiscono una sincronia biologica impeccabile, blindando l'integrità del nostro Single Point of Truth.
+
+---
+
+## Sessione del 2026-06-10 (Mattina) - Risoluzione Conflitti Issue ID, Avanzamento Backlog e Idee Pool (v0.3.5)
+
+### Panoramica della Sessione
+In questa sessione abbiamo condotto un audit completo della documentazione di governance e del repository per riscontrare la presenza di eventuali bug logici o incoerenze. Abbiamo identificato e sanato un'incoerenza legata a conflitti di numerazione negli ID dei ticket GitHub (collisioni tra ID temporanei attribuiti in precedenza ad alcune nuove funzionalità e i ticket reali nel backlog). Inoltre, la governance dell'applicazione è stata allineata al 100% allo schema metodologico ufficiale.
+
+### Decisioni Rilevanti e Allineamento
+1. **Risoluzione Collisioni GitHub ID (GH-32 -> GH-36)**:
+   - *Contesto*: Alcune idee promosse dall'Idea Pool erano state temporaneamente associate nei log a ID ricadenti nella fascia `GH-20` / `GH-24`. Tuttavia, tali identificativi erano già assegnati ad altre voci attive o completate (es. *Autenticazione*, *Configurazione Modello*, *Retry Chiamate*).
+   - *Decisione*: Riassegnati ID univoci, incrementali e privi di collisioni da **GH-32** a **GH-36** per mappare e schedulare in modo ordinato il rilascio delle relative feature in `v0.4.0` e `v0.5.0` nella sezione "Voci Aperte" di `BACKLOG.md`.
+2. **Sincronia Changelog v0.3.5**:
+   - *Contesto*: La build `v0.3.5` era attiva sul client ma non risultava opportunamente rendicontata e descritta nella cronologia ufficiale delle release.
+   - *Decisione*: Redatta la sezione `[v0.3.5]` in `CHANGELOG.md` riportandone nel dettaglio i 4 traguardi ultimati con successo (`GH-26`, `GH-28`, `GH-29`, `GH-30`).
+3. **Frequenza Idee Pool (+2 idee per build completata)**:
+   - *Decisione*: Elaborate e formalizzate 2 nuove proposte mirate e rispondenti alla missione strategica del tool: **IP-77** (Smart Schedule Window, orari preferiti locali) e **IP-78** (Dati di contatto rapido su card), inserite nel pool attivo.
+4. **Tracciamento Link di Servizio (app.md)**:
+   - *Decisione*: Creato il file di governance `app.md` contenente l'URL di condivisione permanente dell'applicazione.
+
+---
+
 ## Sessione del 2026-06-09 (Tarda Sera) - Navigazione Previste, Trasferimento Sandbox & Integrazione Outlook Drag-and-Drop (v0.3.5)
 
 ### Panoramica della Sessione

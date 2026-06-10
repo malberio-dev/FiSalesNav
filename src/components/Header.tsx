@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import { Database, Download, Upload, Settings, RefreshCw } from "lucide-react";
+import { Database, Download, Upload, Settings, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface HeaderProps {
   appName: string;
@@ -11,6 +11,8 @@ interface HeaderProps {
   onOpenSettings: () => void;
   onPrevWeek: () => void;
   onNextWeek: () => void;
+  isPrevDisabled?: boolean;
+  isNextDisabled?: boolean;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -23,6 +25,8 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenSettings,
   onPrevWeek,
   onNextWeek,
+  isPrevDisabled = false,
+  isNextDisabled = false,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -94,17 +98,38 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </div>
 
-          {/* Center Area: Current Week Identifier */}
-          <div className="flex items-center justify-center gap-2 rounded-lg bg-slate-50 px-3.5 py-1.5 border border-slate-200">
-            <span className="text-sm font-semibold text-slate-700 font-mono tracking-tight">
-              Settimana {weekKey}
-            </span>
+          {/* Center Area: Current Week Identifier with Pagination */}
+          <div className="flex items-center justify-center gap-2.5">
+            <button
+              onClick={onPrevWeek}
+              disabled={isPrevDisabled}
+              className={`p-1.5 rounded-lg border bg-white transition hover:text-blue-600 hover:border-blue-200 active:bg-slate-50 disabled:opacity-40 disabled:hover:text-slate-400 disabled:hover:border-slate-200 disabled:cursor-not-allowed`}
+              title={isPrevDisabled ? "Limite di navigazione massimo raggiunto" : "Settimana precedente (max 8 settimane)"}
+            >
+              <ChevronLeft className="w-4.5 h-4.5" />
+            </button>
+            <div className="flex items-center justify-center rounded-lg bg-slate-50 px-4 py-1.5 border border-slate-200 select-none">
+              <span className="text-sm font-semibold text-slate-750 font-mono tracking-tight">
+                Settimana {weekKey}
+              </span>
+            </div>
+            <button
+              onClick={onNextWeek}
+              disabled={isNextDisabled}
+              className={`p-1.5 rounded-lg border bg-white transition hover:text-blue-600 hover:border-blue-200 active:bg-slate-50 disabled:opacity-40 disabled:hover:text-slate-400 disabled:hover:border-slate-200 disabled:cursor-not-allowed`}
+              title={isNextDisabled ? "Limite di navigazione massimo raggiunto" : "Settimana successiva (max 8 settimane)"}
+            >
+              <ChevronRight className="w-4.5 h-4.5" />
+            </button>
           </div>
 
-          {/* Right Area: DB status, Actions, Settings */}
+          {/* Right Area: DB status with comprehensive tooltip, Actions, Settings */}
           <div className="flex items-center justify-between gap-3 md:justify-end">
-            <div className="flex items-center gap-2">
-              <Database className="w-4 h-4 text-slate-400" />
+            <div 
+              className="flex items-center gap-2 cursor-help" 
+              title="I dati dell'agenda risiedono offline nel browser (Offline-First nel localStorage). Il badge si attiva brevemente come 'Syncing' o 'Online' per pochi millisecondi al completamento di salvataggi, modifiche o allineamenti, tornando in seguito allo stato di riposo locale."
+            >
+              <Database className="w-4 h-4 text-slate-400 animate-pulse" />
               {getDbStatusBadge()}
             </div>
 

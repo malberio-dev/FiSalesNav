@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Clock, MapPin, Navigation, CheckCircle, ChevronDown, ChevronUp, RefreshCw, Briefcase, Plus, AlertCircle, Trash2, Search, Filter, Sparkles, Check } from "lucide-react";
+import { Clock, MapPin, Navigation, CheckCircle, ChevronDown, ChevronUp, RefreshCw, Briefcase, Plus, AlertCircle, Trash2, Search, Filter, Sparkles, Check, Edit } from "lucide-react";
 import { SalesVisit, AppSettings } from "../types";
-import { calculateRouteLegs, TravelLeg, optimizeRouteSequence } from "../utils/geo";
+import { calculateRouteLegs, TravelLeg, optimizeRouteSequence, geocodeAddress } from "../utils/geo";
 
 interface TodayTabProps {
   visits: SalesVisit[];
@@ -45,10 +45,88 @@ export const TodayTab: React.FC<TodayTabProps> = ({
     return weekDates[0] || todayISO;
   });
 
+  // Month year navigation formatter (Issue #43)
+  const getFormattedMonthYearForWeek = () => {
+    if (!weekDates || weekDates.length === 0) return "";
+    const first = new Date(weekDates[0]);
+    const last = new Date(weekDates[weekDates.length - 1]);
+    const months = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
+    if (first.getMonth() === last.getMonth()) {
+      return `${months[first.getMonth()]} ${first.getFullYear()}`;
+    } else {
+      if (first.getFullYear() === last.getFullYear()) {
+        return `${months[first.getMonth()]} - ${months[last.getMonth()]} ${last.getFullYear()}`;
+      }
+      return `${months[first.getMonth()]} ${first.getFullYear()} - ${months[last.getMonth()]} ${last.getFullYear()}`;
+    }
+  };
+
   // Search and filter state variables (GitHub Issue #108)
   const [searchQuery, setSearchQuery] = useState("");
   const [filterEsito, setFilterEsito] = useState("Tutti");
   const [isOptimizing, setIsOptimizing] = useState(false);
+
+  // Edit visit state variables (Issue #42)
+  const [editingVisitId, setEditingVisitId] = useState<string | null>(null);
+  const [editAzienda, setEditAzienda] = useState("");
+  const [editIndirizzo, setEditIndirizzo] = useState("");
+  const [editOrario, setEditOrario] = useState("");
+  const [editNotePreVisita, setEditNotePreVisita] = useState("");
+  const [isValidatingEditAddress, setIsValidatingEditAddress] = useState(false);
+  const [editAddressValidationStatus, setEditAddressValidationStatus] = useState<{valid: boolean; coords: [number, number]} | null>(null);
+
+  const handleVerifyEditAddress = async () => {
+    if (!editIndirizzo.trim()) return;
+    setIsValidatingEditAddress(true);
+    setEditAddressValidationStatus(null);
+    try {
+      const coords = await geocodeAddress(editIndirizzo);
+      if (coords) {
+        const savedSettings = localStorage.getItem("fsn:settings");
+        const simulateWrong = savedSettings ? JSON.parse(savedSettings).simulateWrongAddresses : false;
+        if (simulateWrong) {
+          setEditAddressValidationStatus({ valid: false, coords: [0, 0] });
+        } else {
+          setEditAddressValidationStatus({ valid: true, coords });
+        }
+      } else {
+        setEditAddressValidationStatus({ valid: false, coords: [0, 0] });
+      }
+    } catch (e) {
+      setEditAddressValidationStatus({ valid: false, coords: [0, 0] });
+    } finally {
+      setIsValidatingEditAddress(false);
+    }
+  };
+
+  const handleStartEdit = (visit: SalesVisit) => {
+    setEditingVisitId(visit.id);
+    setEditAzienda(visit.azienda);
+    setEditIndirizzo(visit.indirizzo);
+    setEditOrario(visit.orario);
+    setEditNotePreVisita(visit.notePreVisita || "");
+    setEditAddressValidationStatus(null);
+  };
+
+  const handleSaveEdit = (visit: SalesVisit) => {
+    if (!editAzienda.trim() || !editIndirizzo.trim() || !editOrario.trim()) {
+      alert("I campi Ragione Sociale, Indirizzo e Orario sono obbligatori!");
+      return;
+    }
+    const updated: SalesVisit = {
+      ...visit,
+      azienda: editAzienda.trim(),
+      indirizzo: editIndirizzo.trim(),
+      orario: editOrario.trim(),
+      notePreVisita: editNotePreVisita.trim(),
+    };
+    onUpdateVisit(updated);
+    setEditingVisitId(null);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingVisitId(null);
+  };
 
   // Unfiltered planned stops for selectedDate (calculated sequentially)
   const plannedTodaysVisits = visits
@@ -252,7 +330,9 @@ export const TodayTab: React.FC<TodayTabProps> = ({
       <div className="rounded-2xl border bg-slate-50/50 p-4 space-y-3 shadow-2xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
-            <h3 className="text-xs font-extrabold uppercase tracking-widest text-slate-700 select-none">Navigazione e Preview Giornate</h3>
+            <h3 className="text-xs font-extrabold uppercase tracking-widest text-slate-700 select-none">
+              Navigazione e Preview Giornate ({getFormattedMonthYearForWeek()})
+            </h3>
             <p className="text-[11px] text-slate-500">Seleziona una giornata della settimana corrente per visualizzarne l'itinerario e ricalcolare i km</p>
           </div>
           {weekDates.includes(todayISO) && selectedDate !== todayISO && (
@@ -480,68 +560,176 @@ export const TodayTab: React.FC<TodayTabProps> = ({
                     {/* Expandable details body with navigation */}
                     {isExpanded && (
                       <div className="border-t bg-slate-50/50 p-4 space-y-3.5 text-xs">
-                        <div className="pb-3 border-b text-slate-700">
-                          <div>
-                            <span className="block text-[10px] font-bold uppercase text-slate-400 mb-0.5">Indirizzo Cliente</span>
-                            <p className="font-medium font-mono text-slate-800">{visit.indirizzo}</p>
-                          </div>
-                        </div>
-
-                        {visit.notePreVisita && (
-                          <div>
-                            <span className="block text-[10px] font-bold uppercase text-slate-400 mb-0.5">Note Commerciali Richieste (Pre-Visita)</span>
-                            <p className="font-serif leading-relaxed text-slate-700 bg-white p-2.5 rounded-lg border italic">
-                              "{visit.notePreVisita}"
-                            </p>
-                          </div>
-                        )}
-
-                        {visit.quickNote && (
-                          <div>
-                            <span className="block text-[10px] font-bold uppercase text-slate-400 mb-0.5">Informazioni / Appunti di follow-up</span>
-                            <p className="font-sans leading-relaxed text-slate-600 bg-slate-100/50 p-2.5 rounded-lg border">
-                              {visit.quickNote}
-                            </p>
-                          </div>
-                        )}
-
-                        {/* CRM Report Output Preview */}
-                        {visit.report && (
-                          <div className="rounded-xl bg-blue-50/45 border border-blue-100 p-3.5 space-y-1">
-                            <span className="block text-[10px] font-extrabold uppercase tracking-wider text-blue-600">Report CRM Consolidato da Gemini</span>
-                            <p className="text-xs font-serif leading-relaxed text-slate-800">{visit.report}</p>
-                          </div>
-                        )}
-
-                        {/* Expandable Card Actions */}
-                        <div className="flex flex-wrap items-center justify-between gap-2.5 pt-2">
-                          <button
-                            onClick={() => openInGoogleMaps(visit.indirizzo)}
-                            className="flex items-center gap-1.5 rounded-lg bg-blue-600 px-3.5 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition"
-                          >
-                            <Navigation className="w-3.5 h-3.5 fill-white" />
-                            Ottieni Indicazioni
-                          </button>
-
-                          <div className="flex items-center gap-2">
-                            <button
-                              onClick={() => onDeleteVisit(visit.id)}
-                              className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
-                               title="Rimuovi visita"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+                        {editingVisitId === visit.id ? (
+                          <div className="space-y-3.5 bg-white border border-slate-200/80 rounded-xl p-4 shadow-3xs">
+                            <h5 className="text-[11px] font-extrabold uppercase text-slate-500 tracking-wider flex items-center justify-between pb-1.5 border-b select-none">
+                              <span>Modifica Appuntamento</span>
+                              <span className="text-[9px] font-mono text-slate-400 font-medium">ID: {visit.id}</span>
+                            </h5>
                             
-                            <button
-                              onClick={() => onOpenDebrief(visit)}
-                              className="flex items-center gap-1 rounded-lg border border-blue-200 px-3.5 py-2 text-xs font-bold text-blue-600 hover:bg-blue-50 transition"
-                            >
-                              <CheckCircle className="w-3.5 h-3.5" />
-                              {isCompleted ? "Aggiorna Debrief" : "Mark as " + (visit.isDemo ? "DONE" : "Effettuata")}
-                            </button>
-                          </div>
-                        </div>
+                            <div className="space-y-3">
+                              <div>
+                                <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1">Ragione Sociale Azienda</label>
+                                <input
+                                  type="text"
+                                  value={editAzienda}
+                                  onChange={(e) => setEditAzienda(e.target.value)}
+                                  className="w-full rounded-lg border border-slate-200 px-3 py-1.5 text-xs text-slate-800 bg-white focus:outline-hidden focus:border-blue-500"
+                                />
+                              </div>
 
+                              <div>
+                                <div className="flex items-center justify-between mb-1">
+                                  <label className="block text-[10px] font-bold uppercase text-slate-400">Indirizzo Cliente</label>
+                                  <button
+                                    type="button"
+                                    onClick={handleVerifyEditAddress}
+                                    disabled={isValidatingEditAddress || !editIndirizzo.trim()}
+                                    className="text-[9px] font-bold text-blue-600 hover:text-blue-700 disabled:opacity-40 cursor-pointer"
+                                  >
+                                    {isValidatingEditAddress ? "Verifica..." : "Verifica Indirizzo"}
+                                  </button>
+                                </div>
+                                <input
+                                  type="text"
+                                  value={editIndirizzo}
+                                  onChange={(e) => {
+                                    setEditIndirizzo(e.target.value);
+                                    setEditAddressValidationStatus(null);
+                                  }}
+                                  className="w-full rounded-lg border border-slate-200 px-3 py-1.5 text-xs text-slate-800 bg-white focus:outline-hidden focus:border-blue-500"
+                                />
+                                {editAddressValidationStatus && (
+                                  <div className={`mt-1 text-[10px] font-semibold flex items-center gap-1 ${
+                                    editAddressValidationStatus.valid ? "text-emerald-600" : "text-amber-500"
+                                  }`}>
+                                    {editAddressValidationStatus.valid ? (
+                                      <>
+                                        <Check className="w-3 h-3 stroke-[2.5]" />
+                                        Validato Coerente: {editAddressValidationStatus.coords[0].toFixed(4)}°, {editAddressValidationStatus.coords[1].toFixed(4)}°
+                                      </>
+                                    ) : (
+                                      <>
+                                        <AlertCircle className="w-3 h-3 stroke-[2.5]" />
+                                        Messa in bolla / Adesione Simulata: Calcolo km standard di ripiego.
+                                      </>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+
+                              <div>
+                                <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1">Note Commerciali Richieste (Pre-Visita)</label>
+                                <textarea
+                                  rows={2}
+                                  value={editNotePreVisita}
+                                  onChange={(e) => setEditNotePreVisita(e.target.value)}
+                                  className="w-full rounded-lg border border-slate-200 px-3 py-1.5 text-xs text-slate-800 bg-white focus:outline-hidden focus:border-blue-500 resize-none"
+                                />
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-3 items-end pt-1">
+                                <div>
+                                  <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1">Orario Visita</label>
+                                  <input
+                                    type="time"
+                                    value={editOrario}
+                                    onChange={(e) => setEditOrario(e.target.value)}
+                                    className="w-full rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-mono font-bold text-slate-800 bg-white focus:outline-hidden focus:border-blue-500"
+                                  />
+                                </div>
+                                <div className="flex gap-2 justify-end">
+                                  <button
+                                    type="button"
+                                    onClick={handleCancelEdit}
+                                    className="px-3 py-1.5 rounded-lg border text-xs font-bold text-slate-500 bg-white hover:bg-slate-50 transition cursor-pointer"
+                                  >
+                                    Annulla
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleSaveEdit(visit)}
+                                    className="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-xs font-bold text-white transition shadow-xs cursor-pointer"
+                                  >
+                                    Salva
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="pb-3 border-b text-slate-700">
+                              <div>
+                                <span className="block text-[10px] font-bold uppercase text-slate-400 mb-0.5">Indirizzo Cliente</span>
+                                <p className="font-medium font-mono text-slate-800">{visit.indirizzo}</p>
+                              </div>
+                            </div>
+
+                            {visit.notePreVisita && (
+                              <div>
+                                <span className="block text-[10px] font-bold uppercase text-slate-400 mb-0.5">Note Commerciali Richieste (Pre-Visita)</span>
+                                <p className="font-serif leading-relaxed text-slate-700 bg-white p-2.5 rounded-lg border italic">
+                                  "{visit.notePreVisita}"
+                                </p>
+                              </div>
+                            )}
+
+                            {visit.quickNote && (
+                              <div>
+                                <span className="block text-[10px] font-bold uppercase text-slate-400 mb-0.5">Informazioni / Appunti di follow-up</span>
+                                <p className="font-sans leading-relaxed text-slate-600 bg-slate-100/50 p-2.5 rounded-lg border">
+                                  {visit.quickNote}
+                                </p>
+                              </div>
+                            )}
+
+                            {/* CRM Report Output Preview */}
+                            {visit.report && (
+                              <div className="rounded-xl bg-blue-50/45 border border-blue-100 p-3.5 space-y-1">
+                                <span className="block text-[10px] font-extrabold uppercase tracking-wider text-blue-600">Report CRM Consolidato da Gemini</span>
+                                <p className="text-xs font-serif leading-relaxed text-slate-800">{visit.report}</p>
+                              </div>
+                            )}
+
+                            {/* Expandable Card Actions */}
+                            <div className="flex flex-wrap items-center justify-between gap-2.5 pt-2">
+                              <button
+                                onClick={() => openInGoogleMaps(visit.indirizzo)}
+                                className="flex items-center gap-1.5 rounded-lg bg-blue-600 px-3.5 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition cursor-pointer"
+                              >
+                                <Navigation className="w-3.5 h-3.5 fill-white" />
+                                Ottieni Indicazioni
+                              </button>
+
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => handleStartEdit(visit)}
+                                  className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition cursor-pointer"
+                                  title="Modifica appuntamento"
+                                >
+                                  <Edit className="w-4 h-4" />
+                                </button>
+
+                                <button
+                                  onClick={() => onDeleteVisit(visit.id)}
+                                  className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition cursor-pointer"
+                                  title="Rimuovi visita"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                                
+                                <button
+                                  onClick={() => onOpenDebrief(visit)}
+                                  className="flex items-center gap-1 rounded-lg border border-blue-200 px-3.5 py-2 text-xs font-bold text-blue-600 hover:bg-blue-50 transition cursor-pointer"
+                                >
+                                  <CheckCircle className="w-3.5 h-3.5" />
+                                  {isCompleted ? "Aggiorna Debrief" : "Mark as " + (visit.isDemo ? "DONE" : "Effettuata")}
+                                </button>
+                              </div>
+                            </div>
+                          </>
+                        )}
                       </div>
                     )}
 

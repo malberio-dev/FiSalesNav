@@ -32,6 +32,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   apiRetries: 3,
   initialDelay: 1500,
   enableSearchGrounding: false,
+  simulateWrongAddresses: false,
 };
 
 export default function App() {
@@ -47,6 +48,20 @@ export default function App() {
     const mon = new Date(today.setDate(diff));
     return mon;
   });
+
+  // Original base Monday of today (used for limits check)
+  const [initialWeekBase] = useState(() => {
+    const today = new Date();
+    const day = today.getDay();
+    const diff = today.getDate() - day + (day === 0 ? -6 : 1);
+    const mon = new Date(today.setDate(diff));
+    return mon;
+  });
+
+  // Calculate week limits
+  const weeksDiff = Math.round((currentWeekBase.getTime() - initialWeekBase.getTime()) / (7 * 24 * 60 * 60 * 1000));
+  const isPrevDisabled = weeksDiff <= -8;
+  const isNextDisabled = weeksDiff >= 8;
 
   // Settings state
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
@@ -241,7 +256,7 @@ export default function App() {
     <div className="min-h-screen bg-slate-50 flex flex-col antialiased">
       <Header
         appName="FiSalesNav"
-        appVersion="v0.3.5"
+        appVersion="v0.3.6"
         weekKey={weekKey}
         dbStatus={dbStatus}
         onDownloadSnapshot={handleDownloadSnapshot}
@@ -249,6 +264,8 @@ export default function App() {
         onOpenSettings={() => setIsSettingsOpen(true)}
         onPrevWeek={handlePrevWeek}
         onNextWeek={handleNextWeek}
+        isPrevDisabled={isPrevDisabled}
+        isNextDisabled={isNextDisabled}
       />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-6 sm:px-6 lg:px-8 flex flex-col gap-6">

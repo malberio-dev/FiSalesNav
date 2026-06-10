@@ -85,55 +85,100 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
 
   const parseAndInsertIcs = (icsText: string, dateStr: string) => {
     try {
-      let summary = "";
-      let location = "";
-      let description = "";
-      let timeInput = "09:00"; 
-
       const lines = icsText.split(/\r?\n/);
-      for (const line of lines) {
-        if (line.toUpperCase().startsWith("SUMMARY:")) {
-          summary = line.substring(8).trim();
-        } else if (line.toUpperCase().startsWith("LOCATION:")) {
-          location = line.substring(9).trim();
-        } else if (line.toUpperCase().startsWith("DESCRIPTION:")) {
-          description = line.substring(12).trim().replace(/\\n/g, "\n");
-        } else if (line.toUpperCase().startsWith("DTSTART:")) {
-          const val = line.substring(line.indexOf(":") + 1).trim();
-          const match = val.match(/T(\d{2})(\d{2})/);
-          if (match) {
-            timeInput = `${match[1]}:${match[2]}`;
-          }
-        } else if (line.toUpperCase().startsWith("DTSTART;")) {
-          const val = line.substring(line.indexOf(":") + 1).trim();
-          const match = val.match(/T(\d{2})(\d{2})/);
-          if (match) {
-            timeInput = `${match[1]}:${match[2]}`;
+      const events: Array<{ summary: string; location: string; description: string; timeInput: string }> = [];
+      let currentEvent: { summary: string; location: string; description: string; timeInput: string } | null = null;
+
+      for (let i = 0; i < lines.length; i++) {
+        let line = lines[i];
+        
+        // Unfold folded lines if any
+        while (i + 1 < lines.length && (lines[i + 1].startsWith(" ") || lines[i + 1].startsWith("\t"))) {
+          line += lines[i + 1].substring(1);
+          i++;
+        }
+
+        const upperLine = line.toUpperCase();
+
+        if (upperLine.startsWith("BEGIN:VEVENT")) {
+          currentEvent = { summary: "", location: "", description: "", timeInput: "09:00" };
+        } else if (upperLine.startsWith("END:VEVENT") && currentEvent) {
+          events.push(currentEvent);
+          currentEvent = null;
+        } else if (currentEvent) {
+          if (upperLine.startsWith("SUMMARY:")) {
+            currentEvent.summary = line.substring(8).trim();
+          } else if (upperLine.startsWith("LOCATION:")) {
+            currentEvent.location = line.substring(9).trim();
+          } else if (upperLine.startsWith("DESCRIPTION:")) {
+            currentEvent.description = line.substring(12).trim().replace(/\\n/g, "\n");
+          } else if (upperLine.startsWith("DTSTART:")) {
+            const val = line.substring(line.indexOf(":") + 1).trim();
+            const match = val.match(/T(\d{2})(\d{2})/);
+            if (match) {
+              currentEvent.timeInput = `${match[1]}:${match[2]}`;
+            }
+          } else if (upperLine.startsWith("DTSTART;")) {
+            const val = line.substring(line.indexOf(":") + 1).trim();
+            const match = val.match(/T(\d{2})(\d{2})/);
+            if (match) {
+              currentEvent.timeInput = `${match[1]}:${match[2]}`;
+            }
           }
         }
       }
 
-      if (!summary) {
-        summary = "Nuovo Incontro Outlook";
+      // If no VEVENT tags found but text matches some standard fields, fallback to single entry
+      if (events.length === 0) {
+        let summary = "";
+        let location = "";
+        let description = "";
+        let timeInput = "09:00";
+        for (const line of lines) {
+          if (line.toUpperCase().startsWith("SUMMARY:")) {
+            summary = line.substring(8).trim();
+          } else if (line.toUpperCase().startsWith("LOCATION:")) {
+            location = line.substring(9).trim();
+          } else if (line.toUpperCase().startsWith("DESCRIPTION:")) {
+            description = line.substring(12).trim().replace(/\\n/g, "\n");
+          } else if (line.toUpperCase().startsWith("DTSTART:")) {
+            const val = line.substring(line.indexOf(":") + 1).trim();
+            const match = val.match(/T(\d{2})(\d{2})/);
+            if (match) {
+              timeInput = `${match[1]}:${match[2]}`;
+            }
+          }
+        }
+        events.push({
+          summary: summary || "Nuovo Incontro Outlook",
+          location: location || "Indirizzo da inserire",
+          description: description || "Importato da appuntamento Outlook.",
+          timeInput,
+        });
       }
 
-      const newVisit = {
-        id: `outlook_${Date.now()}`,
-        azienda: summary,
-        indirizzo: location || "Indirizzo da inserire",
-        data: dateStr,
-        orario: timeInput,
-        notePreVisita: description || "Importato da appuntamento Outlook.",
-        quickNote: "",
-        esito: "",
-        prodotti: "",
-        offerta: "",
-        nextStep: "",
-        report: "",
-      };
+      let count = 0;
+      for (const ev of events) {
+        const title = ev.summary || "Nuovo Incontro Outlook";
+        const newVisit = {
+          id: `outlook_${Date.now()}_${Math.floor(Math.random() * 100000)}`,
+          azienda: title,
+          indirizzo: ev.location || "Indirizzo da inserire",
+          data: dateStr,
+          orario: ev.timeInput,
+          notePreVisita: ev.description || "Importato da appuntamento Outlook.",
+          quickNote: "",
+          esito: "",
+          prodotti: "",
+          offerta: "",
+          nextStep: "",
+          report: "",
+        };
+        onAddVisit(newVisit);
+        count++;
+      }
 
-      onAddVisit(newVisit);
-      alert(`🎉 [Outlook Sync] Importato con successo: "${summary}" alle ${timeInput} per il giorno ${dateStr}!`);
+      alert(`🎉 [Outlook Sync] Importanti con successo ${count} appuntamenti per il giorno ${dateStr}!`);
     } catch (e) {
       console.error(e);
       alert("Si è verificato un errore nel parsing dell'appuntamento ICS.");
