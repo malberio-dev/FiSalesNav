@@ -1,6 +1,8 @@
 # BACKLOG
 
-Il presente documento costituisce l'unico punto di verità (**Single Point of Truth**) per il tracciamento dei requisiti, dei bug e delle evoluzioni di FiSalesNav, allineato rigorosamente con le issue ufficiali del repository GitHub.
+Il presente documento - quando aggiornato dal repository GitHub - è punto di verità (**Point of Truth**) per il tracciamento dei requisiti, dei bug e delle evoluzioni di FiSalesNav, allineato rigorosamente con le issue ufficiali del repository GitHub.
+
+Le voci GH-nn sono corrispondenti 1:1 con il repository GitHub; vengono create nuove voci GH-nn SOLO a fronte di nuove issue generate nel repository.
 
 ---
 
@@ -83,23 +85,6 @@ In questa sezione sono raccolte tutte le proposte, idee e voci precedentemente r
 
 | ID | Tipo / Origine | Titolo e Descrizione Originale | Effort | Stato |
 |---|---|---|---|---|
-| **KK-20** | Idea Pool (**IP-01**) | **Smart Confirm: Copia Messaggio per WhatsApp/E-mail**: Un tap genera un messaggio di conferma appuntamento pronto da incollare in e-mail o WhatsApp. Tono adattabile (formale/informale) modificabile da Settings. | Basso | Pianificato |
-| **KK-21** | Idea Pool (**IP-03**) | **Esportazione in Formato Calendario (.ics)**: Permette all'agente di esportare l'intera settimana o giornata di visite direttamente sull'app calendario del proprio smartphone. | Basso | Pianificato |
-| **KK-22** | Idea Pool (**IP-08**) | **Gestione Preferiti / Clienti Top**: Possibilità di contrassegnare i clienti strategici con una stella dorata per evidenziarli nel calendario e sulla mappa delle visite. | Basso | Pianificato |
-| **KK-23** | Idea Pool (**IP-43**) | **Sintesi Vocale Briefing Pre-Visita (Audio Reader)**: Lettura sonora attiva durante la guida dei dettagli e delle note storiche sul cliente che si sta per raggiungere. | Medio | Pianificato |
-| **KK-24** | Idea Pool (**IP-22**) | **Visite di Emergenza "Chi c'è vicino?"**: Funzione che suggerisce clienti inattivi o prospect alternativi nel raggio di 10km nel caso in cui un appuntamento programmato salti all'ultimo momento. | Medio | Pianificato |
-| **KK-32** | Feedback QA (**GH-35**) | **Opzione Simulazione Indirizzi Errati**: Opzione per simulare indirizzi errati o anomalie di geolocalizzazione per forzare la geocodifica resiliente di ripiego con opportuni avvisi. | Basso | Pianificato |
-| **KK-33** | Feedback Utente (**GH-36**) | **Validazione Indirizzo nel form**: Aggiunto pulsante di validazione dell'indirizzo nel form prima del salvataggio nel modal d'inserimento o nel widget in-card. | Basso | Pianificato |
-| **KK-34** | Feedback Doc (**GH-37**) | **Documentazione Badge Offline-First**: Spiegazione esaustiva del funzionamento locale "Offline-First" tramite hover tooltip sul badge nel Header. | Basso | Pianificato |
-| **KK-35** | Feedback Telemetria (**GH-38**) | **Diagnostica e Telemetria Token in Tempo Reale**: Allineamento in tempo reale delle telemetrie token e delle quote stimate all'accumulo di chiamate API nel SettingsModal. | Basso | Pianificato |
-| **KK-36** | Feedback Logistica (**GH-39**) | **Simplificazione Punto di Partenza/Ritorno**: Semplificati i punti di partenza configurando e unificando l'itinerario con l'indirizzo base in Settings per la fine e l'inizio giornata. | Basso | Pianificato |
-| **KK-37** | Feedback UI/UX (**GH-40**) | **Raffinamento Filtri Oggi**: Alleggerita e ridisegnata in modo minimale la barra di filtri e della ricerca nella tab Oggi. | Basso | Pianificato |
-| **KK-38** | Feedback Debrief (**GH-41**) | **Formato Debriefing Semplificato**: Transizione ad un input di debriefing testuale libero (campo note rapido) delegando all'AI la corretta strutturazione formale. | Basso | Pianificato |
-| **KK-39** | Feedback Planner (**GH-42**) | **Modifica Appuntamenti In-Card**: Aggiunto pulsante edit (icona matita) sulla card d'appuntamento per aggiornare orario, azienda, percorso o note al volo direttamente sul planner con geolocalizzazione automatica. | Basso | Pianificato |
-| **KK-40** | Feedback Calendario (**GH-43**) | **Indicatore Mese nel Calendario e Navigatore**: Aggiunto l'indicatore testuale di Mese/Anno di navigazione d'agenda in base alle giornate feriali visualizzate a schermo. | Basso | Pianificato |
-| **KK-41** | Feedback Buffer (**GH-44**) | **Navigazione Calendario fino a 10 Settimane**: Estesa la navigazione feriale ad un buffer flessibile di 8 settimane anteriori e posteriori con prevenzione over-navigation sui pulsanti. | Basso | Pianificato |
-| **KK-42** | Feedback Parser (**GH-45**) | **Miglioramento Parser Outlook ICS**: Aggiornato e testato il parser di trascinamento d'appuntamenti Outlook ICS rimuovendo bugs su righe multiline (unfolding) e accogliendo VEVENT multipli nello stesso file. | Medio | Pianificato |
-| **KK-43** | Feedback Dati Demo (**GH-46**) | **Dati Demo Allineati**: Allineamento di TIMES ed orari in serie logistica e popolamento di visite completate d'esempio per i test. | Basso | Pianificato |
 
 ---
 
@@ -107,8 +92,6 @@ In questa sezione sono raccolte tutte le proposte, idee e voci precedentemente r
 
 | ID | Simbolo | Priorità | Data Inserimento | Idea | Effort | Valore Concreto | Stato |
 |---|---|---|---|---|---|---|---|
-| **IPa5** | 🟢 | **Alta** | 2026-06-10 | **Orario di Visita Consigliato (Smart Schedule Window)** (IP-77): Integrazione di orari e giorni preferiti di visita per ciascun cliente locale, con avviso visivo se differiscono dall'agenda prefissata. | Basso | Alto (Ottimizza la pianificazione sul campo) | Attivo |
-| **IPa6** | 🟢 | **Alta** | 2026-06-10 | **Dati di Contatto Rapido su Card Visita** (IP-78): Link dritti per avviare telefonata o e-mail direttamente cliccando sul referente dalla scheda dell'itinerario. | Basso | Molto Alto (Velocizza i contatti al volo) | Attivo |
 | **IP-01** | 🟢 | **Alta** | 2026-06-08 | **Smart confirm: copia messaggio per WhatsApp/email**: Un tap genera un messaggio di conferma appuntamento pronto da incollare in e-mail o WhatsApp. Tono adattabile (formale/informale) modificabile da Settings. Esempio: *"Buongiorno [referente], le confermo la nostra visita domani [data] alle [orario] presso [azienda]. Resto disponibile per qualsiasi variazione."* | Basso | Molto Alto (Elimina uno dei micro-task più ripetitivi della giornata commerciale) | Attivo |
 | **IP-02** | 🟢 | **Alta** | 2026-06-08 | **Modifica appuntamenti nella visualizzazione settimana**: Possibilità di trascinare, spostare o riprogrammare l'agenda settimanale direttamente tramite un pratico tasto "Conferma" di modifica. | Basso | Alto (Mantiene dinamica e reattiva la pianificazione flessibile dell'agente) | Attivo |
 | **IP-03** | 🟢 | **Alta** | 2026-06-08 | **Esportazione in formato Calendario (.ics)**: Permette all'agente di esportare l'intera settimana o giornata di visite direttamente sull'app calendario del proprio smartphone. | Basso | Molto Alto (Sincronizzazione comoda con Google Calendar / iOS Calendar) | Attivo |

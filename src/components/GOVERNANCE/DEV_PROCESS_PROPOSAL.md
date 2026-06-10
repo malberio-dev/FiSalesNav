@@ -213,23 +213,23 @@ Versione corrente: [vX.Y].
 
 ---
 
-## 7. Protocollo di Allineamento ed Integrazione con GitHub (Single Point of Truth)
+## 7. Protocollo di Allineamento ed Integrazione con GitHub (Point of Truth)
 
-Per assicurare che il file `BACKLOG.md` funga da effettivo riflesso e memoria speculare del repository di issue di GitHub, mitigando i rischi di discrepanze, sfasamento di contatori o sormonti di ID, si stabilisce il seguente protocollo:
+Per assicurare che il file `BACKLOG.md` (quando aggiornato dal repository GitHub) funga da **Point of Truth** per il tracciamento dei requisiti, dei bug e delle evoluzioni di FiSalesNav, allineato rigorosamente con le issue ufficiali del repository GitHub, si definisce il seguente protocollo. In questa ottica, il backlog locale funge da documento operativo, mentre GitHub rimane la sorgente di verità ufficiale.
 
 ### A. Anatomia e Namespace Rigido degli ID
 Per evitare ambiguità semantiche e collisioni numeriche indotte da iterazioni rapide, si stabilisce un'architettura dei namespace a tre livelli:
 1. **Namespace Remoto Ufficiale (`GH-nn`)**: Riservato **esclusivamente** a issue reali e attestate sulla piattaforma GitHub.
-   - *Regola aurea*: Nessuna issue locale può essere classificata come `GH-nn` a meno che non corrisponda intenzionalmente, id per id, all'issue del repository remoto.
+   - *Regola aurea*: Le voci `GH-nn` sono corrispondenti 1:1 con il repository GitHub; vengono create nuove voci `GH-nn` SOLO a fronte di nuove issue generate nel repository remoto.
 2. **Namespace di Riserva / Collisioni Locali (`KK-nn`)**: Utilizzato per archiviare in sicurezza le proposte locali o storiche che, a seguito di un audit di sincronizzazione, hanno evidenziato una sovrapposizione con i ticket reali di GitHub.
    - *Finalità*: Preservare il patrimonio storico locale evitando la riscrittura distruttiva dei record informativi.
 3. **Namespace di Incubazione / Idee (`IP-nn` o `IPa-nn`)**: Confina le tessere non ancora deliberate per lo sviluppo all'interno del "Pool Attivo" di idee di miglioramento.
 
-### B. Cerimonie di Sincronizzazione (Audit & alignment)
-Il mantenimento del Single Point of Truth richiede due distinte cerimonie di allineamento integrate nel ciclo di sviluppo:
-- **Pre-Flight Sync (Check di Apertura)**: All'apertura della sessione o all'estrazione di nuove richieste utente, l'AI esegue una scansione incrociata di `BACKLOG.md` per assicurare che gli identificativi associati all'attività di sviluppo non vadano ad intaccare o sormontare range di ticket reali o chiusi.
-- **Post-Flight Sync (Aggiornamento di Chiusura)**: Al termine della build e prima della redazione del Changelog, le issue completate ed elaborate vengono marcate in `BACKLOG.md` con il rispettivo ID `GH-nn`, allineando simultaneamente i contatori generali.
-- **Sincronia Offline / Fallback**: Se le issue o i feedback vengono definiti offline o in assenza di un ID remoto stabilito sul momento, verranno registrate in `BACKLOG.md` con id temporaneo `TEMP-nn` e tradotte in `GH-nn` solo a seguito di effettiva registrazione sul portale remoto.
+### B. Cerimonie di Sincronizzazione (Audit & Alignment)
+Il mantenimento del Point of Truth richiede due distinte cerimonie di allineamento integrate nel ciclo di sviluppo:
+- **Pre-Flight Sync (Check di Apertura)**: All'apertura della sessione o all'estrazione di nuove richieste utente, l'AI esegue una scansione incrociata di `BACKLOG.md` per assicurare che gli identificativi associati all'attività di sviluppo non vadano ad intaccare o sormontare range di ticket reali o chiusi su GitHub.
+- **Post-Flight Sync (Aggiornamento di Chiusura)**: Al termine della build, le issue completate ed elaborate vengono marcate in `BACKLOG.md` con il rispettivo ID `GH-nn` (solo se effettivamente corrispondenti a issue sul repository), armonizzando lo stato di avanzamento.
+- **Sincronia Offline / Fallback**: Se le issue o i feedback vengono definiti offline prima dell'apertura di un ticket formale, vengono registrate temporaneamente come `KK-nn` o mantenute nel pool `IP-nn` finché non corrispondono ad una issue GitHub effettiva.
 
 ### C. Risoluzione degli Incidenti di Drift (Gestione Discrepanze)
 Qualora si riscontri un drift (allontanamento progressivo o duplicazione involontaria di ID tra locale e GitHub):
